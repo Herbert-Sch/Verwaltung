@@ -1,12 +1,12 @@
 ID,Camera-ID,Location,Address,Arena,Installation Type,IP Address,Installation Date,Uninstallation Date,Status,Event Manager,Local Contact,Server-ID
-1,734,Lager Bielefeld,"Bielefeld, Germany",CMH,,,,Storage,,,
-2,743,Lager Bielefeld,"Bielefeld, Germany",CMH,,,,Storage,,,
+1,734,Lager Bielefeld,"Bielefeld, Germany",CMH,,,,Storage,,,bd82607b
+2,743,Lager Bielefeld,"Bielefeld, Germany",CMH,,,,Storage,,,944ca7ac
 3,1403,Almelo,"Almelo, Netherlands",Jumping Z,,,,Active,,,c945490b
-4,1479,Wickrath,"Mönchengladbach, Germany",Indoor,,85.215.242.18:8888,,,Active,,,
-5,1484,HITS Hudson Valley,"Saugerties, NY, USA",HUNTER 3,,,,Active,,,
-6,1485,Peelbergen,"Kronenberg, Netherlands",Hiplando Arena (Arena West),,87.106.176.137:8888,,,Active,,,
-7,2836,Peelbergen,"Kronenberg, Netherlands",Lakeside Farm Arena,,87.106.176.134:8888,,,Active,,,
-8,3217,Peelbergen,"Kronenberg, Netherlands",EquiHome Arena,,87.106.176.136:8888,,,Active,,,
+4,1479,Wickrath,"Mönchengladbach, Germany",Indoor,,85.215.242.18:8888,,,Active,,,fhda40a9
+5,1484,HITS Hudson Valley,"Saugerties, NY, USA",HUNTER 3,,,,Active,,,fhd7e188
+6,1485,Peelbergen,"Kronenberg, Netherlands",Hiplando Arena (Arena West),,87.106.176.137:8888,,,Active,,,fhd5931d
+7,2836,Peelbergen,"Kronenberg, Netherlands",Lakeside Farm Arena,,87.106.176.134:8888,,,Active,,,fhd0dad3
+8,3217,Peelbergen,"Kronenberg, Netherlands",EquiHome Arena,,87.106.176.136:8888,,,Active,,,fhdfe5a4
 9,3242,WEC Ocala,"Ocala, FL, USA",Indoor 4,,66.179.242.241:8888,,,Active,,,fhd9bb3c
 10,3248,HITS Hudson Valley,"Saugerties, NY, USA",Ring Hudson (3),,,,Active,,,fhd8a6f5
 11,3254,HITS Hudson Valley,"Saugerties, NY, USA",HUNTER 2,,,,Active,,,fhd29e22
@@ -15,14 +15,14 @@ ID,Camera-ID,Location,Address,Arena,Installation Type,IP Address,Installation Da
 14,3273,USA,"USA",Unknown,,,,,,ae260d79
 15,3277,USA,"USA",Unknown,,,,,,,
 16,3283,Almelo,"Almelo, Netherlands",Dressage 3,,,,Active,,,fhda3e5e
-17,3287,HITS Del Mar,"Del Mar, CA, USA",Indoor,,,,Active,,,fhd33618
+17,3287,HITS Del Mar,"Del Mar, CA, USA",Indoor,,,,Active,,,fhd5b115
 18,3290,Aiken Horse Park,"Aiken, SC, USA",Ring 3,,,,Active,,,fhdce4bc
-19,3296,Turnierservice Peter Sünkel,"Germany",Turnierservice Dienstleister,Mobile,,,,Active,,,
-20,3304,Lemwerder,"Lemwerder, Germany",Reitplatz,,212.132.124.212:8888,,,Active,,,
-21,3305,Kranichstein,"Darmstadt, Germany",Dressurplatz 1,,212.132.124.211:8888,,,Active,,,
-22,3314,Ladenburg,"Ladenburg, Germany",Reitplatz,,87.106.144.246:8888,,,Active,,,
+19,3296,Turnierservice Peter Sünkel,"Germany",Turnierservice Dienstleister,Mobile,,,,Active,,,fhde1847
+20,3304,Lemwerder,"Lemwerder, Germany",Reitplatz,,212.132.124.212:8888,,,Active,,,7c866453
+21,3305,Kranichstein,"Darmstadt, Germany",Dressurplatz 1,,212.132.124.211:8888,,,Active,,,6627cb2a
+22,3314,Ladenburg,"Ladenburg, Germany",Reitplatz,,87.106.144.246:8888,,,Active,,,7d471b2d
 23,3316,WEC Ocala,"Ocala, FL, USA",Indoor 1,,66.179.242.155:8888,,,Active,,,fhdb9b6f
-24,3317,Wenders Turnierservice,"Germany",Turnierservice Dienstleister,Mobile,-,,,Active,,,
-25,3318,Kranichstein,"Darmstadt, Germany",Indoor,,87.106.144.242:8888,,,Active,,,
-26,3323,Almelo,"Almelo, Netherlands",Dressage 5,,,,Active,,,
-27,3333,NEW Test Camera,"Test Location",CMH Vision Ultra,,,,,Active,,, 
+24,3317,Wenders Turnierservice,"Germany",Turnierservice Dienstleister,Mobile,-,,,Active,,,6bffc917
+25,3318,Kranichstein,"Darmstadt, Germany",Indoor,,87.106.144.242:8888,,,Active,,,fhd0dff4
+26,3323,Almelo,"Almelo, Netherlands",Dressage 5,,,,Active,,,fhd33618
+27,3333,NEW Test Camera,"Test Location",CMH Vision Ultra,,,,,Active,,,f37d8ba3 
