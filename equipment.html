@@ -52,11 +52,6 @@
                         <option value="">All Countries</option>
                     </select>
                 </div>
-                <div class="debug-controls" style="margin-left: auto;">
-                    <button onclick="reloadFromCSV()" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" title="Reload data from CSV file">
-                        🔄 Reload CSV
-                    </button>
-                </div>
             </div>
             
             <!-- Aktive Kameras -->
@@ -377,33 +372,32 @@
         let currentEditingCameraId = null;
         
         // CSV-Daten laden und Equipment anzeigen
-        async function loadEquipmentData(forceReload = false) {
+        async function loadEquipmentData() {
             try {
                 // Prüfe ob lokale Änderungen vorhanden sind
                 const localData = localStorage.getItem('camerasData');
                 
-                if (localData && !forceReload) {
-                    // Verwende lokale Daten
+                if (localData) {
+                    // Verwende lokale Daten (enthalten Benutzer-Änderungen)
                     camerasData = JSON.parse(localData);
-                    console.log('📁 Loading camera data from localStorage');
+                    console.log('📁 Loading camera data from localStorage (with user changes)');
                 } else {
-                    // CSV laden
+                    // CSV laden (erste Verwendung oder keine lokalen Änderungen)
                     const response = await fetch('ai_cameras.csv');
                     const csvText = await response.text();
                     
                     // CSV parsen
                     camerasData = parseCSV(csvText);
-                    console.log('📄 Loading camera data from CSV file');
-                    
-                    if (forceReload) {
-                        // Lösche alte localStorage-Daten
-                        localStorage.removeItem('camerasData');
-                        console.log('🗑️ Cleared localStorage camera data');
-                    }
+                    console.log('📄 Loading camera data from CSV file (fresh)');
                 }
                 
                 // Debug: Kamera-Kategorisierung 
                 debugCameraCategories();
+                
+                // Info für Entwickler
+                if (localStorage.getItem('camerasData')) {
+                    console.log('💡 Tip: To reset to original CSV data, run: resetToCSV()');
+                }
                 
                 // Länder-Dropdown befüllen
                 populateCountryFilter();
@@ -418,17 +412,13 @@
             }
         }
         
-        // CSV-Daten neu laden (für Debugging)
-        function reloadFromCSV() {
-            console.log('🔄 Reloading data from CSV...');
-            loadEquipmentData(true);
-        }
+
         
         // Debug-Funktion: Zeige Kamera-Kategorisierung
         function debugCameraCategories() {
             console.log('=== CAMERA CATEGORIZATION DEBUG ===');
             console.log(`Total cameras loaded: ${camerasData.length}`);
-            console.log('Data source:', localStorage.getItem('camerasData') ? 'localStorage' : 'CSV file');
+            console.log('Data source:', localStorage.getItem('camerasData') ? 'localStorage (with user changes)' : 'CSV file (fresh)');
             
             // Zeige alle rohen Daten
             console.log('All camera data:');
@@ -1446,6 +1436,16 @@
         
         // Equipment-Daten beim Laden der Seite laden
         document.addEventListener('DOMContentLoaded', loadEquipmentData);
+        
+        // Helper-Funktion: Zurück zu originalen CSV-Daten (für Konsole)
+        function resetToCSV() {
+            localStorage.removeItem('camerasData');
+            console.log('🗑️ Cleared localStorage - reloading page to show original CSV data...');
+            location.reload();
+        }
+        
+        // Global verfügbar machen für Konsole
+        window.resetToCSV = resetToCSV;
     </script>
 </body>
 </html> 
