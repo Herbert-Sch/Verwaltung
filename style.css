@@ -1225,6 +1225,68 @@ body {
     margin-bottom: 2.5rem;
 }
 
+/* IP Address Styles */
+.ip-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ip-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.ip-link:hover {
+    background-color: #eff6ff;
+    text-decoration: underline;
+    color: #1d4ed8;
+}
+
+.ip-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.ip-status .ip-spinner {
+    animation: spin 1s linear infinite;
+    color: #6b7280;
+}
+
+.ip-status.success {
+    background-color: #dcfce7;
+    border: 1px solid #16a34a;
+}
+
+.ip-status.success .ip-success {
+    color: #16a34a;
+}
+
+.ip-status.error {
+    background-color: #fef2f2;
+    border: 1px solid #dc2626;
+}
+
+.ip-status.error .ip-error {
+    color: #dc2626;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .equipment-section h3 {
     color: #070E16;
     font-size: 1.1rem;
@@ -1606,6 +1668,24 @@ body {
     
     .equipment-section {
         margin-bottom: 2rem;
+    }
+    
+    .ip-container {
+        flex-direction: column;
+        gap: 0.3rem;
+        align-items: flex-start;
+    }
+    
+    .ip-link {
+        font-size: 0.8rem;
+        padding: 0.1rem 0.3rem;
+    }
+    
+    .ip-status {
+        width: 14px;
+        height: 14px;
+        font-size: 0.7rem;
+        align-self: flex-end;
     }
     
     .equipment-table {

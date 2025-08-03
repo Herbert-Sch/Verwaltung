@@ -541,7 +541,7 @@
                     <td><strong>${camera['Camera-ID']}</strong></td>
                     <td>${formatLocationWithCountry(camera['Location'], camera['Address'])}</td>
                     <td>${camera['Arena'] || '-'}</td>
-                    <td>${camera['IP Address'] || '-'}</td>
+                    <td>${formatIPAddress(camera['IP Address'], camera['ID'])}</td>
                     <td>${camera['Installation Date'] || '-'}</td>
                     <td><span class="status-badge active">Active</span></td>
                     <td>
@@ -622,7 +622,7 @@
                     <td><strong>${camera['Camera-ID'] || '-'}</strong></td>
                     <td>${formatLocationWithCountry(camera['Location'], camera['Address'])}</td>
                     <td>${camera['Arena'] || '-'}</td>
-                    <td>${camera['IP Address'] || '-'}</td>
+                    <td>${formatIPAddress(camera['IP Address'], camera['ID'])}</td>
                     <td>${camera['Uninstallation Date'] || '-'}</td>
                     <td><span class="status-badge inactive">Inactive</span></td>
                     <td>
@@ -1227,6 +1227,90 @@
                 if (countryA !== selectedCountry && countryB === selectedCountry) return 1;
                 return 0;
             });
+        }
+        
+        // IP-Adresse formatieren mit Erreichbarkeitsprüfung
+        function formatIPAddress(ipAddress, cameraId) {
+            if (!ipAddress || ipAddress.trim() === '') {
+                return '-';
+            }
+            
+            const cleanIP = ipAddress.trim();
+            const statusId = `ip-status-${cameraId}`;
+            
+            // IP-Adresse als anklickbarer Link mit Status-Icon
+            const html = `
+                <span class="ip-container">
+                    <a href="http://${cleanIP}" target="_blank" class="ip-link" title="Open ${cleanIP} in new window">
+                        ${cleanIP}
+                    </a>
+                    <span id="${statusId}" class="ip-status" title="Checking connectivity...">
+                        <span class="ip-spinner">⟳</span>
+                    </span>
+                </span>
+            `;
+            
+            // IP-Erreichbarkeit asynchron prüfen
+            setTimeout(() => checkIPConnectivity(cleanIP, statusId), 500);
+            
+            return html;
+        }
+        
+        // IP-Erreichbarkeit prüfen
+        async function checkIPConnectivity(ipAddress, statusId) {
+            const statusElement = document.getElementById(statusId);
+            if (!statusElement) return;
+            
+            try {
+                // Versuche verschiedene Ports/Protokolle
+                const testUrls = [
+                    `http://${ipAddress}`,
+                    `http://${ipAddress}:80`,
+                    `http://${ipAddress}:8080`,
+                    `http://${ipAddress}:8888`
+                ];
+                
+                let isReachable = false;
+                
+                for (const url of testUrls) {
+                    try {
+                        // Timeout-basierte Anfrage mit AbortController
+                        const controller = new AbortController();
+                        const timeout = setTimeout(() => controller.abort(), 3000);
+                        
+                        const response = await fetch(url, {
+                            method: 'HEAD',
+                            mode: 'no-cors', // Umgeht CORS-Probleme
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeout);
+                        isReachable = true;
+                        break;
+                        
+                    } catch (error) {
+                        // Auch bei CORS-Fehlern könnte der Server erreichbar sein
+                        if (error.name !== 'AbortError') {
+                            isReachable = true; // Antwort erhalten = Server erreichbar
+                            break;
+                        }
+                    }
+                }
+                
+                // Status-Icon aktualisieren
+                if (isReachable) {
+                    statusElement.innerHTML = '<span class="ip-success" title="IP Address is reachable">✓</span>';
+                    statusElement.className = 'ip-status success';
+                } else {
+                    statusElement.innerHTML = '<span class="ip-error" title="IP Address is not reachable">⚠</span>';
+                    statusElement.className = 'ip-status error';
+                }
+                
+            } catch (error) {
+                console.log(`IP check failed for ${ipAddress}:`, error);
+                statusElement.innerHTML = '<span class="ip-error" title="Could not check IP connectivity">⚠</span>';
+                statusElement.className = 'ip-status error';
+            }
         }
         
         // Modal schließen beim Klick außerhalb (erweitert)
