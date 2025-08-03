@@ -44,6 +44,16 @@
         <main class="dashboard-content">
             <h2>Equipment</h2>
             
+            <!-- Länder-Filter -->
+            <div class="country-filter-section">
+                <div class="filter-group">
+                    <label for="countryFilter">Filter by Country:</label>
+                    <select id="countryFilter" onchange="applyCountryFilter()">
+                        <option value="">All Countries</option>
+                    </select>
+                </div>
+            </div>
+            
             <!-- Aktive Kameras -->
             <div class="equipment-section active-section">
                 <div class="section-header">
@@ -377,6 +387,9 @@
                     camerasData = parseCSV(csvText);
                 }
                 
+                // Länder-Dropdown befüllen
+                populateCountryFilter();
+                
                 // Equipment-Tabellen anzeigen
                 displayActiveCameras();
                 displayPendingCameras();
@@ -432,11 +445,12 @@
         }
         
         // Aktive Kameras anzeigen
-        function displayActiveCameras() {
+        function displayActiveCameras(selectedCountry = '') {
             const tbody = document.getElementById('activeCamerasBody');
             tbody.innerHTML = '';
             
-            const activeCameras = camerasData.filter(camera => camera['Status'] === 'Active');
+            let activeCameras = camerasData.filter(camera => camera['Status'] === 'Active');
+            activeCameras = sortCamerasByCountry(activeCameras, selectedCountry);
             
             activeCameras.forEach((camera, index) => {
                 const serverId = camera['Server-ID'];
@@ -469,7 +483,7 @@
                         }
                     </td>
                     <td><strong>${camera['Camera-ID']}</strong></td>
-                    <td>${camera['Location'] || '-'}</td>
+                    <td>${formatLocationWithCountry(camera['Location'], camera['Address'])}</td>
                     <td>${camera['Arena'] || '-'}</td>
                     <td>${camera['IP Address'] || '-'}</td>
                     <td>${camera['Installation Date'] || '-'}</td>
@@ -494,20 +508,21 @@
         }
         
         // Zu installierende Kameras anzeigen
-        function displayPendingCameras() {
+        function displayPendingCameras(selectedCountry = '') {
             const tbody = document.getElementById('pendingCamerasBody');
             tbody.innerHTML = '';
             
-            const pendingCameras = camerasData.filter(camera => 
+            let pendingCameras = camerasData.filter(camera => 
                 camera['Status'] === '' || camera['Status'] === 'pending' || 
                 (camera['Camera-ID'] && !camera['Status'])
             );
+            pendingCameras = sortCamerasByCountry(pendingCameras, selectedCountry);
             
             pendingCameras.forEach(camera => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td><strong>${camera['Camera-ID'] || '-'}</strong></td>
-                    <td>${camera['Location'] || '-'}</td>
+                    <td>${formatLocationWithCountry(camera['Location'], camera['Address'])}</td>
                     <td>${camera['Arena'] || '-'}</td>
                     <td>${camera['Installation Type'] || '-'}</td>
                     <td>${camera['Address'] || '-'}</td>
@@ -527,17 +542,18 @@
         }
         
         // Inaktive Kameras anzeigen
-        function displayInactiveCameras() {
+        function displayInactiveCameras(selectedCountry = '') {
             const tbody = document.getElementById('inactiveCamerasBody');
             tbody.innerHTML = '';
             
-            const inactiveCameras = camerasData.filter(camera => camera['Status'] === 'Storage');
+            let inactiveCameras = camerasData.filter(camera => camera['Status'] === 'Inactive' || camera['Status'] === 'Storage');
+            inactiveCameras = sortCamerasByCountry(inactiveCameras, selectedCountry);
             
             inactiveCameras.forEach(camera => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td><strong>${camera['Camera-ID'] || '-'}</strong></td>
-                    <td>${camera['Location'] || '-'}</td>
+                    <td>${formatLocationWithCountry(camera['Location'], camera['Address'])}</td>
                     <td>${camera['Arena'] || '-'}</td>
                     <td>${camera['IP Address'] || '-'}</td>
                     <td>${camera['Uninstallation Date'] || '-'}</td>
@@ -570,6 +586,16 @@
             
             console.log(`Loading HLS stream for Camera ${cameraId}: ${streamUrl}`);
             
+            // Timeout für Stream-Loading (10 Sekunden)
+            const loadTimeout = setTimeout(() => {
+                console.log(`Stream loading timeout for Camera ${cameraId}, showing standby display`);
+                showStandbyDisplay(cameraId);
+                if (hlsPlayers[cameraId]) {
+                    hlsPlayers[cameraId].destroy();
+                    delete hlsPlayers[cameraId];
+                }
+            }, 10000);
+            
             if (Hls.isSupported()) {
                 const hls = new Hls({
                     enableWorker: false,
@@ -582,6 +608,7 @@
                 
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
                     console.log(`HLS manifest loaded for Camera ${cameraId}`);
+                    clearTimeout(loadTimeout); // Stream erfolgreich geladen
                     if (statusElement) {
                         statusElement.textContent = 'Live';
                         statusElement.className = 'stream-status live';
@@ -593,24 +620,28 @@
                 
                 hls.on(Hls.Events.ERROR, function(event, data) {
                     console.error(`HLS error for Camera ${cameraId}:`, data);
-                    if (statusElement) {
-                        statusElement.textContent = 'Stream unavailable';
-                        statusElement.className = 'stream-status error';
-                    }
                     
                     if (data.fatal) {
+                        clearTimeout(loadTimeout); // Timeout löschen bei Fehler
+                        console.log(`Fatal error for Camera ${cameraId}, showing standby display`);
+                        showStandbyDisplay(cameraId);
+                        hls.destroy();
+                        delete hlsPlayers[cameraId];
+                    } else {
+                        // Nicht-fatale Fehler: Versuche Recovery
+                        if (statusElement) {
+                            statusElement.textContent = 'Reconnecting...';
+                            statusElement.className = 'stream-status loading';
+                        }
+                        
                         switch(data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
                                 console.log(`Network error for Camera ${cameraId}, trying to recover...`);
-                                hls.startLoad();
+                                setTimeout(() => hls.startLoad(), 1000);
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
                                 console.log(`Media error for Camera ${cameraId}, trying to recover...`);
                                 hls.recoverMediaError();
-                                break;
-                            default:
-                                console.log(`Fatal error for Camera ${cameraId}, destroying HLS instance`);
-                                hls.destroy();
                                 break;
                         }
                     }
@@ -623,6 +654,7 @@
                 // Fallback für Safari
                 video.src = streamUrl;
                 video.addEventListener('loadedmetadata', function() {
+                    clearTimeout(loadTimeout); // Stream erfolgreich geladen
                     if (statusElement) {
                         statusElement.textContent = 'Live';
                         statusElement.className = 'stream-status live';
@@ -633,19 +665,40 @@
                 });
                 
                 video.addEventListener('error', function() {
-                    console.error(`Video error for Camera ${cameraId}`);
-                    if (statusElement) {
-                        statusElement.textContent = 'Stream unavailable';
-                        statusElement.className = 'stream-status error';
-                    }
+                    clearTimeout(loadTimeout); // Timeout löschen bei Fehler
+                    console.log(`Video error for Camera ${cameraId}, showing standby display`);
+                    showStandbyDisplay(cameraId);
                 });
             } else {
-                console.error(`HLS not supported for Camera ${cameraId}`);
-                if (statusElement) {
-                    statusElement.textContent = 'HLS not supported';
-                    statusElement.className = 'stream-status error';
-                }
+                clearTimeout(loadTimeout); // Timeout löschen 
+                console.log(`HLS not supported for Camera ${cameraId}, showing standby display`);
+                showStandbyDisplay(cameraId);
             }
+        }
+        
+        // Standby-Display anzeigen (ersetzt Video-Player bei Fehlern)
+        function showStandbyDisplay(cameraId) {
+            const video = document.getElementById(`video-${cameraId}`);
+            if (!video) return;
+            
+            const streamCell = video.closest('.stream-cell');
+            if (!streamCell) return;
+            
+            // Video-Container durch Standby-Display ersetzen
+            streamCell.innerHTML = `
+                <div class="standby-container">
+                    <div class="standby-screen">
+                        <div class="standby-bars">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                        </div>
+                        <div class="standby-text">STANDBY</div>
+                    </div>
+                </div>
+            `;
         }
         
         // Cleanup beim Verlassen der Seite
@@ -1018,6 +1071,95 @@
         // Kameras im localStorage speichern
         function saveCamerasToLocalStorage() {
             localStorage.setItem('camerasData', JSON.stringify(camerasData));
+        }
+        
+        // Land aus Adresse extrahieren
+        function extractCountryFromAddress(address) {
+            if (!address) return 'Unknown';
+            
+            const countryMappings = {
+                'Germany': 'Germany',
+                'Deutschland': 'Germany',
+                'USA': 'USA',
+                'United States': 'USA',
+                'Netherlands': 'Netherlands',
+                'Nederland': 'Netherlands',
+                'UK': 'United Kingdom',
+                'United Kingdom': 'United Kingdom'
+            };
+            
+            // Nach bekannten Ländern suchen
+            for (const [key, value] of Object.entries(countryMappings)) {
+                if (address.toLowerCase().includes(key.toLowerCase())) {
+                    return value;
+                }
+            }
+            
+            // Falls nicht gefunden, letzten Teil der Adresse nehmen
+            const parts = address.split(',').map(part => part.trim());
+            return parts[parts.length - 1] || 'Unknown';
+        }
+        
+        // Länder-Dropdown befüllen
+        function populateCountryFilter() {
+            const countries = new Set();
+            
+            camerasData.forEach(camera => {
+                const country = extractCountryFromAddress(camera['Address']);
+                countries.add(country);
+            });
+            
+            const select = document.getElementById('countryFilter');
+            const currentValue = select.value;
+            
+            // Optionen löschen (außer "All Countries")
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // Länder sortiert hinzufügen
+            Array.from(countries).sort().forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                select.appendChild(option);
+            });
+            
+            // Vorherigen Wert wiederherstellen
+            select.value = currentValue;
+        }
+        
+        // Country-Filter anwenden
+        function applyCountryFilter() {
+            const selectedCountry = document.getElementById('countryFilter').value;
+            
+            // Alle Tabellen neu laden mit Filter
+            displayActiveCameras(selectedCountry);
+            displayPendingCameras(selectedCountry);
+            displayInactiveCameras(selectedCountry);
+        }
+        
+        // Location mit Land formatieren
+        function formatLocationWithCountry(location, address) {
+            const country = extractCountryFromAddress(address);
+            if (country === 'Unknown' || !location) {
+                return location || '-';
+            }
+            return `${location} (${country})`;
+        }
+        
+        // Kameras nach Land sortieren
+        function sortCamerasByCountry(cameras, selectedCountry) {
+            if (!selectedCountry) return cameras;
+            
+            return cameras.sort((a, b) => {
+                const countryA = extractCountryFromAddress(a['Address']);
+                const countryB = extractCountryFromAddress(b['Address']);
+                
+                if (countryA === selectedCountry && countryB !== selectedCountry) return -1;
+                if (countryA !== selectedCountry && countryB === selectedCountry) return 1;
+                return 0;
+            });
         }
         
         // Modal schließen beim Klick außerhalb (erweitert)

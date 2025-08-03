@@ -1184,6 +1184,43 @@ body {
     }
 
 /* Equipment Page Styles */
+.country-filter-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #2563eb;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #374151;
+    min-width: 140px;
+}
+
+.filter-group select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    min-width: 200px;
+    font-size: 0.9rem;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
 .equipment-section {
     margin-bottom: 2.5rem;
 }
@@ -1546,6 +1583,27 @@ body {
 }
 
 @media (max-width: 768px) {
+    .country-filter-section {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .filter-group label {
+        min-width: unset;
+        font-size: 0.9rem;
+    }
+    
+    .filter-group select {
+        min-width: unset;
+        width: 100%;
+    }
+    
     .equipment-section {
         margin-bottom: 2rem;
     }
