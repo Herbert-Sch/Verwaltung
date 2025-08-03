@@ -40,8 +40,112 @@
         </nav>
         
         <main class="dashboard-content">
-            <h2>Finance</h2>
-            <p>Finance content will be added here...</p>
+            <h2>Finance - AI Camera Kostenverwaltung</h2>
+            
+            <!-- Kosten-Übersicht -->
+            <div class="finance-overview">
+                <div class="finance-cards">
+                    <div class="finance-card">
+                        <h3>📊 Gesamtkosten pro System</h3>
+                        <div class="cost-breakdown">
+                            <div class="cost-item">
+                                <span class="cost-label">Einmalige Kosten (Netto):</span>
+                                <span class="cost-value" id="initialCostNet">€ 6.300,00</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">Einmalige Kosten (Brutto):</span>
+                                <span class="cost-value highlight" id="initialCostGross">€ 7.497,00</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">Monatliche Kosten (Netto):</span>
+                                <span class="cost-value" id="monthlyCostNet">€ 918,60</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">Monatliche Kosten (Brutto):</span>
+                                <span class="cost-value highlight" id="monthlyCostGross">€ 1.090,14</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="finance-card">
+                        <h3>📈 Aktuelle Systeme</h3>
+                        <div class="system-stats">
+                            <div class="stat-item">
+                                <span class="stat-number" id="totalSystems">27</span>
+                                <span class="stat-label">Gesamte Systeme</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="activeSystems">-</span>
+                                <span class="stat-label">Aktive Systeme</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="monthlyTotal">-</span>
+                                <span class="stat-label">Monatliche Gesamtkosten</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detaillierte Kostenaufschlüsselung -->
+            <div class="cost-details">
+                <h3>📋 Detaillierte Kostenaufschlüsselung</h3>
+                
+                <div class="cost-sections">
+                    <!-- Einmalige Kosten -->
+                    <div class="cost-section">
+                        <h4>🏗️ Einmalige Kosten pro System</h4>
+                        <table class="cost-table" id="initialCostsTable">
+                            <thead>
+                                <tr>
+                                    <th>Komponente</th>
+                                    <th>Beschreibung</th>
+                                    <th>Netto (€)</th>
+                                    <th>MwSt. (€)</th>
+                                    <th>Brutto (€)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamisch geladen -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Monatliche Kosten -->
+                    <div class="cost-section">
+                        <h4>📅 Monatliche Kosten pro System</h4>
+                        <table class="cost-table" id="monthlyCostsTable">
+                            <thead>
+                                <tr>
+                                    <th>Kostenart</th>
+                                    <th>Beschreibung</th>
+                                    <th>Netto (€)</th>
+                                    <th>MwSt. (€)</th>
+                                    <th>Brutto (€)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamisch geladen -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kostenrechner -->
+            <div class="cost-calculator">
+                <h3>🧮 Kostenrechner</h3>
+                <div class="calculator-input">
+                    <label for="systemCount">Anzahl Systeme:</label>
+                    <input type="number" id="systemCount" min="1" value="1" onchange="calculateCosts()">
+                    <label for="operatingHours">Betriebsstunden pro Tag:</label>
+                    <input type="number" id="operatingHours" min="1" max="24" value="15" onchange="calculateCosts()">
+                </div>
+                
+                <div class="calculator-results" id="calculatorResults">
+                    <!-- Dynamisch berechnet -->
+                </div>
+            </div>
         </main>
     </div>
     
@@ -58,6 +162,278 @@
             localStorage.removeItem('currentUser');
             window.location.href = 'index.html';
         }
+        
+        // Finance Data
+        let financeData = {};
+        let camerasData = [];
+        
+        // Load Finance Data
+        async function loadFinanceData() {
+            try {
+                // Lade Kostendaten
+                const financeResponse = await fetch('finance_costs.json');
+                financeData = await financeResponse.json();
+                
+                // Lade Kamera-Daten für Systemanzahl
+                const camerasResponse = await fetch('ai_cameras.json');
+                const camerasJSON = await camerasResponse.json();
+                camerasData = camerasJSON.cameras;
+                
+                console.log('📊 Finance: Data loaded successfully');
+                
+                displayFinanceOverview();
+                displayCostTables();
+                updateSystemStats();
+                calculateCosts();
+                
+            } catch (error) {
+                console.error('❌ Finance: Error loading data:', error);
+            }
+        }
+        
+        // Format Currency
+        function formatCurrency(amount, decimals = 2) {
+            return `€ ${amount.toLocaleString('de-DE', { 
+                minimumFractionDigits: decimals, 
+                maximumFractionDigits: decimals 
+            })}`;
+        }
+        
+        // Calculate VAT
+        function calculateVAT(netAmount, vatRate = 0.19) {
+            return netAmount * vatRate;
+        }
+        
+        // Display Finance Overview
+        function displayFinanceOverview() {
+            const calculations = financeData.calculations.totalSystemCost;
+            
+            document.getElementById('initialCostNet').textContent = formatCurrency(calculations.initial.totalNetEUR);
+            document.getElementById('initialCostGross').textContent = formatCurrency(calculations.initial.totalGrossEUR);
+            document.getElementById('monthlyCostNet').textContent = formatCurrency(calculations.monthlyPerSystem.totalNetEUR);
+            document.getElementById('monthlyCostGross').textContent = formatCurrency(calculations.monthlyPerSystem.totalGrossEUR);
+        }
+        
+        // Display Cost Tables
+        function displayCostTables() {
+            displayInitialCostsTable();
+            displayMonthlyCostsTable();
+        }
+        
+        // Display Initial Costs Table
+        function displayInitialCostsTable() {
+            const tbody = document.querySelector('#initialCostsTable tbody');
+            tbody.innerHTML = '';
+            
+            const costs = financeData.cameraCosts;
+            const vatRate = financeData.vatRate.germany;
+            
+            const items = [
+                {
+                    component: 'K2 Kamerasystem',
+                    description: costs.initialCost.k2CameraSystem.description,
+                    net: costs.initialCost.k2CameraSystem.amount
+                },
+                {
+                    component: 'Basis Box',
+                    description: costs.purchaseCosts.baseBox.description,
+                    net: costs.purchaseCosts.baseBox.amount
+                },
+                {
+                    component: 'Zubehör gesamt',
+                    description: costs.purchaseCosts.totalAccessories.description,
+                    net: costs.purchaseCosts.totalAccessories.amount
+                }
+            ];
+            
+            let totalNet = 0;
+            
+            items.forEach(item => {
+                const vat = calculateVAT(item.net, vatRate);
+                const gross = item.net + vat;
+                totalNet += item.net;
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${item.component}</strong></td>
+                    <td>${item.description}</td>
+                    <td>${formatCurrency(item.net)}</td>
+                    <td>${formatCurrency(vat)}</td>
+                    <td>${formatCurrency(gross)}</td>
+                `;
+            });
+            
+            // Total row
+            const totalVat = calculateVAT(totalNet, vatRate);
+            const totalGross = totalNet + totalVat;
+            const totalRow = tbody.insertRow();
+            totalRow.classList.add('total-row');
+            totalRow.innerHTML = `
+                <td><strong>GESAMT</strong></td>
+                <td>Einmalige Kosten pro System</td>
+                <td><strong>${formatCurrency(totalNet)}</strong></td>
+                <td><strong>${formatCurrency(totalVat)}</strong></td>
+                <td><strong>${formatCurrency(totalGross)}</strong></td>
+            `;
+        }
+        
+        // Display Monthly Costs Table
+        function displayMonthlyCostsTable() {
+            const tbody = document.querySelector('#monthlyCostsTable tbody');
+            tbody.innerHTML = '';
+            
+            const costs = financeData.cameraCosts;
+            const vatRate = financeData.vatRate.germany;
+            
+            const items = [
+                {
+                    type: 'Lizenzgebühr',
+                    description: costs.monthlyCosts.licenseFee.tier1.description,
+                    net: costs.monthlyCosts.licenseFee.tier1.amount,
+                    vatIncluded: costs.monthlyCosts.licenseFee.tier1.vatIncluded
+                },
+                {
+                    type: 'Bonding System',
+                    description: costs.monthlyCosts.bondingSystem.description,
+                    net: costs.monthlyCosts.bondingSystem.amount,
+                    vatIncluded: costs.monthlyCosts.bondingSystem.vatIncluded
+                },
+                {
+                    type: 'Serverkosten',
+                    description: costs.operationalCosts.serverCosts.perMonth15hDaily.description,
+                    net: costs.operationalCosts.serverCosts.perMonth15hDaily.amount,
+                    vatIncluded: false
+                }
+            ];
+            
+            let totalNet = 0;
+            let totalVat = 0;
+            
+            items.forEach(item => {
+                let net, vat, gross;
+                
+                if (item.vatIncluded) {
+                    // Bonding System hat MwSt bereits inkludiert
+                    gross = item.net;
+                    net = gross / (1 + vatRate);
+                    vat = gross - net;
+                } else {
+                    net = item.net;
+                    vat = calculateVAT(net, vatRate);
+                    gross = net + vat;
+                }
+                
+                totalNet += net;
+                totalVat += vat;
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${item.type}</strong></td>
+                    <td>${item.description}</td>
+                    <td>${formatCurrency(net)}</td>
+                    <td>${formatCurrency(vat)}</td>
+                    <td>${formatCurrency(gross)}</td>
+                `;
+            });
+            
+            // Total row
+            const totalGross = totalNet + totalVat;
+            const totalRow = tbody.insertRow();
+            totalRow.classList.add('total-row');
+            totalRow.innerHTML = `
+                <td><strong>GESAMT</strong></td>
+                <td>Monatliche Kosten pro System (Tier 1)</td>
+                <td><strong>${formatCurrency(totalNet)}</strong></td>
+                <td><strong>${formatCurrency(totalVat)}</strong></td>
+                <td><strong>${formatCurrency(totalGross)}</strong></td>
+            `;
+        }
+        
+        // Update System Stats
+        function updateSystemStats() {
+            const totalSystems = camerasData.length;
+            const activeSystems = camerasData.filter(camera => camera.status === 'Active').length;
+            
+            document.getElementById('totalSystems').textContent = totalSystems;
+            document.getElementById('activeSystems').textContent = activeSystems;
+            
+            // Berechne monatliche Gesamtkosten
+            const monthlyCostPerSystem = financeData.calculations.totalSystemCost.monthlyPerSystem.totalGrossEUR;
+            const totalMonthlyCost = activeSystems * monthlyCostPerSystem;
+            
+            document.getElementById('monthlyTotal').textContent = formatCurrency(totalMonthlyCost, 0);
+        }
+        
+        // Calculate Costs
+        function calculateCosts() {
+            const systemCount = parseInt(document.getElementById('systemCount').value) || 1;
+            const operatingHours = parseInt(document.getElementById('operatingHours').value) || 15;
+            
+            const costs = financeData.cameraCosts;
+            const vatRate = financeData.vatRate.germany;
+            
+            // Einmalige Kosten
+            const initialCostPerSystem = financeData.calculations.totalSystemCost.initial.totalGrossEUR;
+            const totalInitialCost = systemCount * initialCostPerSystem;
+            
+            // Monatliche Kosten
+            let licenseFeePerSystem;
+            if (systemCount <= 50) {
+                licenseFeePerSystem = costs.monthlyCosts.licenseFee.tier1.amount;
+            } else {
+                // Erste 50 mit Tier 1, Rest mit Tier 2
+                const tier1Systems = 50;
+                const tier2Systems = systemCount - 50;
+                const tier1Cost = tier1Systems * costs.monthlyCosts.licenseFee.tier1.amount;
+                const tier2Cost = tier2Systems * costs.monthlyCosts.licenseFee.tier2.amount;
+                licenseFeePerSystem = (tier1Cost + tier2Cost) / systemCount;
+            }
+            
+            // Server costs based on operating hours
+            const serverCostPerMinute = costs.operationalCosts.serverCosts.perMinute.amount;
+            const serverCostPerSystem = serverCostPerMinute * 60 * operatingHours * 30; // pro Monat
+            
+            const bondingSystemCost = costs.monthlyCosts.bondingSystem.amount;
+            
+            const monthlyCostPerSystemNet = licenseFeePerSystem + serverCostPerSystem + (bondingSystemCost / 1.19);
+            const monthlyVatPerSystem = monthlyCostPerSystemNet * vatRate;
+            const monthlyCostPerSystemGross = monthlyCostPerSystemNet + monthlyVatPerSystem;
+            
+            const totalMonthlyCostGross = systemCount * monthlyCostPerSystemGross;
+            
+            // Jährliche Kosten
+            const totalYearlyCost = totalMonthlyCostGross * 12;
+            
+            // Display results
+            const resultsDiv = document.getElementById('calculatorResults');
+            resultsDiv.innerHTML = `
+                <div class="calc-result-grid">
+                    <div class="calc-result">
+                        <h4>💰 Einmalige Kosten</h4>
+                        <div class="calc-value">${formatCurrency(totalInitialCost, 0)}</div>
+                        <small>für ${systemCount} System(e)</small>
+                    </div>
+                    <div class="calc-result">
+                        <h4>📅 Monatliche Kosten</h4>
+                        <div class="calc-value">${formatCurrency(totalMonthlyCostGross, 0)}</div>
+                        <small>${operatingHours}h täglich, ${systemCount} System(e)</small>
+                    </div>
+                    <div class="calc-result">
+                        <h4>📊 Jährliche Kosten</h4>
+                        <div class="calc-value">${formatCurrency(totalYearlyCost, 0)}</div>
+                        <small>ohne einmalige Kosten</small>
+                    </div>
+                    <div class="calc-result">
+                        <h4>⚡ Pro System/Monat</h4>
+                        <div class="calc-value">${formatCurrency(monthlyCostPerSystemGross)}</div>
+                        <small>${operatingHours}h täglich</small>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', loadFinanceData);
     </script>
 </body>
 </html> 

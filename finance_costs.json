@@ -1,0 +1,144 @@
+{
+  "cameraCosts": {
+    "initialCost": {
+      "k2CameraSystem": {
+        "amount": 3600.00,
+        "currency": "EUR",
+        "vatIncluded": false,
+        "description": "Initial-Betrag pro K2 Kamerasystem",
+        "unit": "per system"
+      }
+    },
+    "purchaseCosts": {
+      "baseBox": {
+        "amount": 2350.00,
+        "currency": "EUR",
+        "vatIncluded": false,
+        "description": "Kaufpreis Basis Box",
+        "unit": "per box"
+      },
+      "accessories": {
+        "microphones": {
+          "amount": 100.00,
+          "currency": "EUR",
+          "vatIncluded": false,
+          "description": "Mikrofone",
+          "unit": "per set"
+        },
+        "mounts": {
+          "amount": 100.00,
+          "currency": "EUR",
+          "vatIncluded": false,
+          "description": "Halterungen",
+          "unit": "per set"
+        },
+        "xlrCables": {
+          "amount": 150.00,
+          "currency": "EUR",
+          "vatIncluded": false,
+          "description": "XLR-Kabel (2x 20m + 2x 100m)",
+          "unit": "per cable set"
+        }
+      },
+      "totalAccessories": {
+        "amount": 350.00,
+        "currency": "EUR",
+        "vatIncluded": false,
+        "description": "Gesamt Zubehör pro System",
+        "unit": "per system"
+      }
+    },
+    "monthlyCosts": {
+      "bondingSystem": {
+        "amount": 16.50,
+        "currency": "EUR",
+        "vatIncluded": true,
+        "description": "Bonding System",
+        "unit": "per month per system"
+      },
+      "licenseFee": {
+        "tier1": {
+          "amount": 300.00,
+          "currency": "EUR",
+          "vatIncluded": false,
+          "description": "Lizenzgebühr für Systeme 1-50",
+          "unit": "per month per system",
+          "systemRange": "1-50"
+        },
+        "tier2": {
+          "amount": 200.00,
+          "currency": "EUR",
+          "vatIncluded": false,
+          "description": "Lizenzgebühr ab dem 51. System",
+          "unit": "per month per system",
+          "systemRange": "51+"
+        }
+      }
+    },
+    "operationalCosts": {
+      "serverCosts": {
+        "perMinute": {
+          "amount": 0.0223,
+          "currency": "EUR",
+          "vatIncluded": false,
+          "description": "Serverkosten pro Minute",
+          "unit": "per minute"
+        },
+        "perDay15h": {
+          "amount": 20.07,
+          "currency": "EUR",
+          "vatIncluded": false,
+          "description": "Serverkosten pro Tag (15h)",
+          "unit": "per day per system",
+          "calculation": "0.0223 * 60 * 15 = 20.07"
+        },
+        "perMonth15hDaily": {
+          "amount": 602.10,
+          "currency": "EUR",
+          "vatIncluded": false,
+          "description": "Serverkosten pro Monat (15h täglich)",
+          "unit": "per month per system",
+          "calculation": "20.07 * 30 = 602.10"
+        }
+      }
+    }
+  },
+  "vatRate": {
+    "germany": 0.19,
+    "description": "Deutsche Mehrwertsteuer"
+  },
+  "calculations": {
+    "totalSystemCost": {
+      "initial": {
+        "description": "Einmalige Kosten pro System",
+        "k2System": 3600.00,
+        "baseBox": 2350.00,
+        "accessories": 350.00,
+        "totalNetEUR": 6300.00,
+        "vatEUR": 1197.00,
+        "totalGrossEUR": 7497.00
+      },
+      "monthlyPerSystem": {
+        "description": "Monatliche Kosten pro System (Tier 1)",
+        "licenseFee": 300.00,
+        "bondingSystem": 16.50,
+        "serverCosts15h": 602.10,
+        "totalNetEUR": 918.60,
+        "vatEUR": 171.54,
+        "totalGrossEUR": 1090.14
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2025-01-22",
+    "description": "AI Camera Management System - Kostenstruktur",
+    "currency": "EUR",
+    "priceDate": "2025",
+    "notes": [
+      "Alle Preise ohne MwSt. sofern nicht anders angegeben",
+      "Serverkosten basieren auf 15h täglich",
+      "Lizenzgebühr gestaffelt: 1-50 Systeme €300, ab 51. System €200"
+    ]
+  }
+} 
