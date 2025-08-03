@@ -371,7 +371,7 @@
         let hlsPlayers = {};
         let currentEditingCameraId = null;
         
-        // CSV-Daten laden und Equipment anzeigen
+        // JSON-Daten laden und Equipment anzeigen
         async function loadEquipmentData() {
             try {
                 // Prüfe ob lokale Änderungen vorhanden sind
@@ -382,13 +382,14 @@
                     camerasData = JSON.parse(localData);
                     console.log('📁 Loading camera data from localStorage (with user changes)');
                 } else {
-                    // CSV laden (erste Verwendung oder keine lokalen Änderungen)
-                    const response = await fetch('ai_cameras.csv');
-                    const csvText = await response.text();
+                    // JSON laden (erste Verwendung oder keine lokalen Änderungen)
+                    const response = await fetch('ai_cameras.json');
+                    const jsonData = await response.json();
                     
-                    // CSV parsen
-                    camerasData = parseCSV(csvText);
-                    console.log('📄 Loading camera data from CSV file (fresh)');
+                    // JSON-Daten in das alte CSV-Format konvertieren für Kompatibilität
+                    camerasData = convertJSONToLegacyFormat(jsonData.cameras);
+                    console.log('📄 Loading camera data from JSON file (fresh)');
+                    console.log(`Equipment: Loaded ${camerasData.length} cameras from JSON`);
                 }
                 
                 // Debug: Kamera-Kategorisierung 
@@ -396,7 +397,7 @@
                 
                 // Info für Entwickler
                 if (localStorage.getItem('camerasData')) {
-                    console.log('💡 Tip: To reset to original CSV data, run: resetToCSV()');
+                    console.log('💡 Tip: To reset to original JSON data, run: resetToCSV()');
                 }
                 
                 // Länder-Dropdown befüllen
@@ -412,13 +413,31 @@
             }
         }
         
-
+        
+        // JSON-Daten in das alte CSV-Format konvertieren (für Kompatibilität mit bestehendem Code)
+        function convertJSONToLegacyFormat(jsonCameras) {
+            return jsonCameras.map(camera => ({
+                'ID': camera.id.toString(),
+                'Camera-ID': camera.cameraId,
+                'Location': camera.location,
+                'Address': camera.address,
+                'Arena': camera.arena,
+                'Installation Type': camera.installationType,
+                'IP Address': camera.ipAddress,
+                'Installation Date': camera.installationDate,
+                'Uninstallation Date': camera.uninstallationDate,
+                'Status': camera.status,
+                'Event Manager': camera.eventManager,
+                'Local Contact': camera.localContact,
+                'Server-ID': camera.serverId
+            }));
+        }
         
         // Debug-Funktion: Zeige Kamera-Kategorisierung
         function debugCameraCategories() {
             console.log('=== CAMERA CATEGORIZATION DEBUG ===');
             console.log(`Total cameras loaded: ${camerasData.length}`);
-            console.log('Data source:', localStorage.getItem('camerasData') ? 'localStorage (with user changes)' : 'CSV file (fresh)');
+            console.log('Data source:', localStorage.getItem('camerasData') ? 'localStorage (with user changes)' : 'JSON file (fresh)');
             
             // Zeige alle rohen Daten
             console.log('All camera data:');
@@ -1437,15 +1456,21 @@
         // Equipment-Daten beim Laden der Seite laden
         document.addEventListener('DOMContentLoaded', loadEquipmentData);
         
-        // Helper-Funktion: Zurück zu originalen CSV-Daten (für Konsole)
-        function resetToCSV() {
+        // Helper-Funktion: Zurück zu originalen JSON-Daten (für Konsole)
+        function resetToJSON() {
             localStorage.removeItem('camerasData');
-            console.log('🗑️ Cleared localStorage - reloading page to show original CSV data...');
+            console.log('🗑️ Cleared localStorage - reloading page to show original JSON data...');
             location.reload();
         }
         
+        // Compatibility alias
+        function resetToCSV() {
+            resetToJSON();
+        }
+        
         // Global verfügbar machen für Konsole
-        window.resetToCSV = resetToCSV;
+        window.resetToJSON = resetToJSON;
+        window.resetToCSV = resetToCSV; // Keep old name for compatibility
     </script>
 </body>
 </html> 

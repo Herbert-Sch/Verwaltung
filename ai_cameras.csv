@@ -17,7 +17,7 @@ ID,Camera-ID,Location,Address,Arena,Installation Type,IP Address,Installation Da
 16,3283,Almelo,"Almelo, Netherlands",Dressage 3,Permanent,,,Active,,,fhda3e5e
 17,3287,HITS Del Mar,"Del Mar, CA, USA",Indoor,Permanent,,,Active,,,fhd5b115
 18,3290,Aiken Horse Park,"Aiken, SC, USA",Ring 3,Permanent,,,Active,,,fhdce4bc
-19,3296,Turnierservice Peter Sünkel,"Germany",Turnierservice Dienstleister,Mobile,,,,Active,,,fhde1847
+19,3296,Turnierservice Peter Sünkel,"Germany",Turnierservice Dienstleister,Mobile,,,Active,,,fhde1847
 20,3304,Lemwerder,"Lemwerder, Germany",Reitplatz,Permanent,212.132.124.212:8888,,,Active,,,7c866453
 21,3305,Kranichstein,"Darmstadt, Germany",Dressurplatz 1,Permanent,212.132.124.211:8888,,,Active,,,6627cb2a
 22,3314,Ladenburg,"Ladenburg, Germany",Reitplatz,Permanent,87.106.144.246:8888,,,Active,,,7d471b2d
