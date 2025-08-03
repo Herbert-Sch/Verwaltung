@@ -1,6 +1,6 @@
 ID,Camera-ID,Location,Address,Arena,Installation Type,IP Address,Installation Date,Uninstallation Date,Status,Event Manager,Local Contact,Server-ID
-1,734,Lager Bielefeld,"Bielefeld, Germany",CMH,,,,Storage,,,bd82607b
-2,743,Lager Bielefeld,"Bielefeld, Germany",CMH,,,,Storage,,,944ca7ac
+1,734,Lager Bielefeld,"Bielefeld, Germany",CMH,,,,Inactive,,,bd82607b
+2,743,Lager Bielefeld,"Bielefeld, Germany",CMH,,,,Inactive,,,944ca7ac
 3,1403,Almelo,"Almelo, Netherlands",Jumping Z,,,,Active,,,c945490b
 4,1479,Wickrath,"Mönchengladbach, Germany",Indoor,,85.215.242.18:8888,,,Active,,,fhda40a9
 5,1484,HITS Hudson Valley,"Saugerties, NY, USA",HUNTER 3,,,,Active,,,fhd7e188
