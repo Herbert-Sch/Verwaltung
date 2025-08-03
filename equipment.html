@@ -377,9 +377,19 @@
                 // Prüfe ob lokale Änderungen vorhanden sind
                 const localData = localStorage.getItem('camerasData');
                 
+                // Prüfe ob localStorage noch alte CSV-Daten enthält und lösche diese
                 if (localData) {
-                    // Verwende lokale Daten (enthalten Benutzer-Änderungen)
-                    camerasData = JSON.parse(localData);
+                    const parsedData = JSON.parse(localData);
+                    // Erkenne alte CSV-Daten durch das Vorhandensein von 'Camera-ID' statt 'cameraId'
+                    if (parsedData.length > 0 && parsedData[0]['Camera-ID'] !== undefined) {
+                        console.log('🗑️ Detected old CSV data in localStorage - clearing for JSON migration');
+                        localStorage.removeItem('camerasData');
+                        // Neu laden ohne localStorage
+                        await loadEquipmentData();
+                        return;
+                    }
+                    // Verwende lokale Daten (enthalten Benutzer-Änderungen im neuen Format)
+                    camerasData = parsedData;
                     console.log('📁 Loading camera data from localStorage (with user changes)');
                 } else {
                     // JSON laden (erste Verwendung oder keine lokalen Änderungen)
