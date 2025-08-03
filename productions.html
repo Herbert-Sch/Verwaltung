@@ -366,7 +366,7 @@
             const currentWeekEnd = new Date(currentWeekStart);
             currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
             
-            let yearlyCount = 0;
+            let yearlyCompletedCount = 0;
             let weeklyCount = 0;
             let plannedCount = 0;
             
@@ -375,9 +375,9 @@
                 const endDate = new Date(production['End-Date']);
                 const status = production['Status'];
                 
-                // Jährliche Produktionen
-                if (startDate.getFullYear() === currentYear) {
-                    yearlyCount++;
+                // Jährliche abgeschlossene Produktionen
+                if (startDate.getFullYear() === currentYear && status === 'completed') {
+                    yearlyCompletedCount++;
                 }
                 
                 // Wöchentliche Produktionen (diese Woche)
@@ -394,7 +394,7 @@
             });
             
             // Statistiken anzeigen
-            document.getElementById('yearlyProductions').textContent = yearlyCount;
+            document.getElementById('yearlyProductions').textContent = yearlyCompletedCount;
             document.getElementById('weeklyProductions').textContent = weeklyCount;
             document.getElementById('plannedProductions').textContent = plannedCount;
         }
