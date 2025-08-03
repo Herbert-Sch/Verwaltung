@@ -33,8 +33,8 @@
     {
       "id": 3,
       "cameraId": "1403",
-      "location": "Almelo",
-      "address": "Almelo, Netherlands",
+      "location": "Gaenserig Mediatec (Switzerland)",
+      "address": "Switzerland",
       "arena": "Jumping Z",
       "installationType": "Permanent",
       "ipAddress": null,
@@ -228,14 +228,14 @@
     {
       "id": 16,
       "cameraId": "3283",
-      "location": "Almelo",
-      "address": "Almelo, Netherlands",
+      "location": "Lager Bielefeld",
+      "address": "Bielefeld, Germany",
       "arena": "Dressage 3",
       "installationType": "Permanent",
       "ipAddress": null,
       "installationDate": null,
       "uninstallationDate": null,
-      "status": "Active",
+      "status": "Inactive",
       "eventManager": null,
       "localContact": null,
       "serverId": "fhda3e5e"
@@ -273,14 +273,14 @@
     {
       "id": 19,
       "cameraId": "3296",
-      "location": "Turnierservice Peter Sünkel",
-      "address": "Germany",
+      "location": "Lager Bielefeld",
+      "address": "Bielefeld, Germany",
       "arena": "Turnierservice Dienstleister",
       "installationType": "Mobile",
       "ipAddress": null,
       "installationDate": null,
       "uninstallationDate": null,
-      "status": "Active",
+      "status": "Inactive",
       "eventManager": null,
       "localContact": null,
       "serverId": "fhde1847"
@@ -378,14 +378,14 @@
     {
       "id": 26,
       "cameraId": "3323",
-      "location": "Almelo",
-      "address": "Almelo, Netherlands",
+      "location": "Lager Bielefeld",
+      "address": "Bielefeld, Germany",
       "arena": "Dressage 5",
       "installationType": "Permanent",
       "ipAddress": null,
       "installationDate": null,
       "uninstallationDate": null,
-      "status": "Active",
+      "status": "Inactive",
       "eventManager": null,
       "localContact": null,
       "serverId": "fhd33618"
@@ -408,7 +408,7 @@
   ],
   "metadata": {
     "version": "1.0",
-    "lastUpdated": "2024-01-21",
+    "lastUpdated": "2024-01-22",
     "totalCameras": 27
   }
 } 
