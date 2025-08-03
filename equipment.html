@@ -46,7 +46,12 @@
             
             <!-- Aktive Kameras -->
             <div class="equipment-section active-section">
-                <h3>Active Cameras</h3>
+                <div class="section-header">
+                    <h3>Active Cameras</h3>
+                    <button class="add-camera-btn" onclick="openAddCameraModal()">
+                        <span>+</span> Add Camera
+                    </button>
+                </div>
                 <div class="equipment-table-container">
                     <table class="equipment-table active" id="activeCamerasTable">
                         <thead>
@@ -59,6 +64,7 @@
                                 <th>Installation Date</th>
                                 <th>Status</th>
                                 <th>Details</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="activeCamerasBody">
@@ -82,6 +88,7 @@
                                 <th>Address</th>
                                 <th>Status</th>
                                 <th>Details</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="pendingCamerasBody">
@@ -105,6 +112,7 @@
                                 <th>Uninstallation Date</th>
                                 <th>Status</th>
                                 <th>Details</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="inactiveCamerasBody">
@@ -146,6 +154,192 @@
         </div>
     </div>
     
+    <!-- Modal für neue Kamera hinzufügen -->
+    <div id="addCameraModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Camera</h3>
+                <span class="modal-close" onclick="closeAddCameraModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addCameraForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cameraId">Camera ID *</label>
+                            <input type="text" id="cameraId" name="cameraId" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location *</label>
+                            <input type="text" id="location" name="location" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="address">
+                        </div>
+                        <div class="form-group">
+                            <label for="arena">Arena</label>
+                            <input type="text" id="arena" name="arena">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="installationType">Installation Type</label>
+                            <select id="installationType" name="installationType">
+                                <option value="">Select Type</option>
+                                <option value="Mobile">Mobile</option>
+                                <option value="Permanent">Permanent</option>
+                                <option value="Tournament Service">Tournament Service</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ipAddress">IP Address</label>
+                            <input type="text" id="ipAddress" name="ipAddress">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="installationDate">Installation Date</label>
+                            <input type="date" id="installationDate" name="installationDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="serverId">Server ID</label>
+                            <input type="text" id="serverId" name="serverId" placeholder="e.g. fhdb9b6f">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status">Status *</label>
+                            <select id="status" name="status" required>
+                                <option value="">Select Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Storage">Storage</option>
+                                <option value="">Pending Installation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventManager">Event Manager</label>
+                            <input type="text" id="eventManager" name="eventManager">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="localContact">Local Contact</label>
+                            <input type="text" id="localContact" name="localContact">
+                        </div>
+                        <div class="form-group"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeAddCameraModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="saveNewCamera()">Save Camera</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal für Kamera bearbeiten -->
+    <div id="editCameraModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Camera</h3>
+                <span class="modal-close" onclick="closeEditCameraModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editCameraForm">
+                    <input type="hidden" id="editCameraRowId" name="editCameraRowId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editCameraId">Camera ID *</label>
+                            <input type="text" id="editCameraId" name="editCameraId" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editLocation">Location *</label>
+                            <input type="text" id="editLocation" name="editLocation" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editAddress">Address</label>
+                            <input type="text" id="editAddress" name="editAddress">
+                        </div>
+                        <div class="form-group">
+                            <label for="editArena">Arena</label>
+                            <input type="text" id="editArena" name="editArena">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editInstallationType">Installation Type</label>
+                            <select id="editInstallationType" name="editInstallationType">
+                                <option value="">Select Type</option>
+                                <option value="Mobile">Mobile</option>
+                                <option value="Permanent">Permanent</option>
+                                <option value="Tournament Service">Tournament Service</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editIpAddress">IP Address</label>
+                            <input type="text" id="editIpAddress" name="editIpAddress">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editInstallationDate">Installation Date</label>
+                            <input type="date" id="editInstallationDate" name="editInstallationDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="editUninstallationDate">Uninstallation Date</label>
+                            <input type="date" id="editUninstallationDate" name="editUninstallationDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editServerId">Server ID</label>
+                            <input type="text" id="editServerId" name="editServerId" placeholder="e.g. fhdb9b6f">
+                        </div>
+                        <div class="form-group">
+                            <label for="editStatus">Status *</label>
+                            <select id="editStatus" name="editStatus" required>
+                                <option value="">Select Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Storage">Storage</option>
+                                <option value="">Pending Installation</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEventManager">Event Manager</label>
+                            <input type="text" id="editEventManager" name="editEventManager">
+                        </div>
+                        <div class="form-group">
+                            <label for="editLocalContact">Local Contact</label>
+                            <input type="text" id="editLocalContact" name="editLocalContact">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-danger" onclick="deleteCamera()">Delete</button>
+                <button type="button" class="btn-secondary" onclick="closeEditCameraModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="saveEditedCamera()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // Check if user is logged in
         const currentUser = localStorage.getItem('currentUser');
@@ -163,15 +357,25 @@
         // Globale Variablen
         let camerasData = [];
         let hlsPlayers = {};
+        let currentEditingCameraId = null;
         
         // CSV-Daten laden und Equipment anzeigen
         async function loadEquipmentData() {
             try {
-                const response = await fetch('ai_cameras.csv');
-                const csvText = await response.text();
+                // Prüfe ob lokale Änderungen vorhanden sind
+                const localData = localStorage.getItem('camerasData');
                 
-                // CSV parsen
-                camerasData = parseCSV(csvText);
+                if (localData) {
+                    // Verwende lokale Daten
+                    camerasData = JSON.parse(localData);
+                } else {
+                    // CSV laden
+                    const response = await fetch('ai_cameras.csv');
+                    const csvText = await response.text();
+                    
+                    // CSV parsen
+                    camerasData = parseCSV(csvText);
+                }
                 
                 // Equipment-Tabellen anzeigen
                 displayActiveCameras();
@@ -275,6 +479,11 @@
                             <i class="info-icon">ℹ</i> Details
                         </button>
                     </td>
+                    <td>
+                        <button class="edit-btn" onclick="openEditCameraModal('${camera['ID']}')">
+                            Edit
+                        </button>
+                    </td>
                 `;
                 
                 // Live-Stream laden falls verfügbar
@@ -308,6 +517,11 @@
                             <i class="info-icon">ℹ</i> Details
                         </button>
                     </td>
+                    <td>
+                        <button class="edit-btn" onclick="openEditCameraModal('${camera['ID']}')">
+                            Edit
+                        </button>
+                    </td>
                 `;
             });
         }
@@ -331,6 +545,11 @@
                     <td>
                         <button class="details-btn" onclick="openCameraDetailsModal('${camera['Camera-ID']}')">
                             <i class="info-icon">ℹ</i> Details
+                        </button>
+                    </td>
+                    <td>
+                        <button class="edit-btn" onclick="openEditCameraModal('${camera['ID']}')">
+                            Edit
                         </button>
                     </td>
                 `;
@@ -608,11 +827,206 @@
             document.body.appendChild(fullscreenDiv);
         }
         
+        // Modal für neue Kamera öffnen
+        function openAddCameraModal() {
+            // Formular zurücksetzen
+            document.getElementById('addCameraForm').reset();
+            
+            // Modal anzeigen
+            document.getElementById('addCameraModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Modal für neue Kamera schließen
+        function closeAddCameraModal() {
+            document.getElementById('addCameraModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Modal für Kamera-Bearbeitung öffnen
+        function openEditCameraModal(cameraRowId) {
+            currentEditingCameraId = cameraRowId;
+            
+            // Kamera finden
+            const camera = camerasData.find(c => c['ID'] === cameraRowId);
+            if (!camera) {
+                alert('Camera not found!');
+                return;
+            }
+            
+            // Formular mit aktuellen Werten füllen
+            document.getElementById('editCameraRowId').value = cameraRowId;
+            document.getElementById('editCameraId').value = camera['Camera-ID'] || '';
+            document.getElementById('editLocation').value = camera['Location'] || '';
+            document.getElementById('editAddress').value = camera['Address'] || '';
+            document.getElementById('editArena').value = camera['Arena'] || '';
+            document.getElementById('editInstallationType').value = camera['Installation Type'] || '';
+            document.getElementById('editIpAddress').value = camera['IP Address'] || '';
+            document.getElementById('editInstallationDate').value = camera['Installation Date'] || '';
+            document.getElementById('editUninstallationDate').value = camera['Uninstallation Date'] || '';
+            document.getElementById('editServerId').value = camera['Server-ID'] || '';
+            document.getElementById('editStatus').value = camera['Status'] || '';
+            document.getElementById('editEventManager').value = camera['Event Manager'] || '';
+            document.getElementById('editLocalContact').value = camera['Local Contact'] || '';
+            
+            // Modal anzeigen
+            document.getElementById('editCameraModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Modal für Kamera-Bearbeitung schließen
+        function closeEditCameraModal() {
+            document.getElementById('editCameraModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentEditingCameraId = null;
+        }
+        
+        // Neue Kamera speichern
+        function saveNewCamera() {
+            // Formular-Daten sammeln
+            const form = document.getElementById('addCameraForm');
+            const formData = new FormData(form);
+            
+            // Validierung
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Neue ID generieren
+            const maxId = Math.max(...camerasData.map(c => parseInt(c['ID']) || 0));
+            const newId = (maxId + 1).toString();
+            
+            // Neue Kamera erstellen
+            const newCamera = {
+                'ID': newId,
+                'Camera-ID': formData.get('cameraId'),
+                'Location': formData.get('location'),
+                'Address': formData.get('address') || '',
+                'Arena': formData.get('arena') || '',
+                'Installation Type': formData.get('installationType') || '',
+                'IP Address': formData.get('ipAddress') || '',
+                'Installation Date': formData.get('installationDate') || '',
+                'Uninstallation Date': '',
+                'Status': formData.get('status') || '',
+                'Event Manager': formData.get('eventManager') || '',
+                'Local Contact': formData.get('localContact') || '',
+                'Server-ID': formData.get('serverId') || ''
+            };
+            
+            // Zu Daten hinzufügen
+            camerasData.push(newCamera);
+            
+            // Lokale Speicherung
+            saveCamerasToLocalStorage();
+            
+            // UI aktualisieren
+            displayActiveCameras();
+            displayPendingCameras();
+            displayInactiveCameras();
+            
+            // Modal schließen
+            closeAddCameraModal();
+            
+            alert('Camera successfully added!');
+        }
+        
+        // Bearbeitete Kamera speichern
+        function saveEditedCamera() {
+            if (!currentEditingCameraId) return;
+            
+            // Formular-Daten sammeln
+            const form = document.getElementById('editCameraForm');
+            const formData = new FormData(form);
+            
+            // Validierung
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Kamera finden und aktualisieren
+            const cameraIndex = camerasData.findIndex(c => c['ID'] === currentEditingCameraId);
+            if (cameraIndex === -1) {
+                alert('Camera not found!');
+                return;
+            }
+            
+            // Kamera aktualisieren
+            camerasData[cameraIndex] = {
+                'ID': currentEditingCameraId,
+                'Camera-ID': formData.get('editCameraId'),
+                'Location': formData.get('editLocation'),
+                'Address': formData.get('editAddress') || '',
+                'Arena': formData.get('editArena') || '',
+                'Installation Type': formData.get('editInstallationType') || '',
+                'IP Address': formData.get('editIpAddress') || '',
+                'Installation Date': formData.get('editInstallationDate') || '',
+                'Uninstallation Date': formData.get('editUninstallationDate') || '',
+                'Status': formData.get('editStatus') || '',
+                'Event Manager': formData.get('editEventManager') || '',
+                'Local Contact': formData.get('editLocalContact') || '',
+                'Server-ID': formData.get('editServerId') || ''
+            };
+            
+            // Lokale Speicherung
+            saveCamerasToLocalStorage();
+            
+            // UI aktualisieren
+            displayActiveCameras();
+            displayPendingCameras();
+            displayInactiveCameras();
+            
+            // Modal schließen
+            closeEditCameraModal();
+            
+            alert('Camera successfully updated!');
+        }
+        
+        // Kamera löschen
+        function deleteCamera() {
+            if (!currentEditingCameraId) return;
+            
+            if (!confirm('Are you sure you want to delete this camera? This action cannot be undone.')) {
+                return;
+            }
+            
+            // Kamera finden und entfernen
+            const cameraIndex = camerasData.findIndex(c => c['ID'] === currentEditingCameraId);
+            if (cameraIndex === -1) {
+                alert('Camera not found!');
+                return;
+            }
+            
+            // Aus Daten entfernen
+            camerasData.splice(cameraIndex, 1);
+            
+            // Lokale Speicherung
+            saveCamerasToLocalStorage();
+            
+            // UI aktualisieren
+            displayActiveCameras();
+            displayPendingCameras();
+            displayInactiveCameras();
+            
+            // Modal schließen
+            closeEditCameraModal();
+            
+            alert('Camera successfully deleted!');
+        }
+        
+        // Kameras im localStorage speichern
+        function saveCamerasToLocalStorage() {
+            localStorage.setItem('camerasData', JSON.stringify(camerasData));
+        }
+        
         // Modal schließen beim Klick außerhalb (erweitert)
         window.onclick = function(event) {
             const addModal = document.getElementById('addProductionModal');
             const editModal = document.getElementById('editProductionModal');
             const detailsModal = document.getElementById('cameraDetailsModal');
+            const addCameraModal = document.getElementById('addCameraModal');
+            const editCameraModal = document.getElementById('editCameraModal');
             
             if (event.target === addModal) {
                 closeAddProductionModal();
@@ -622,6 +1036,12 @@
             }
             if (event.target === detailsModal) {
                 closeCameraDetailsModal();
+            }
+            if (event.target === addCameraModal) {
+                closeAddCameraModal();
+            }
+            if (event.target === editCameraModal) {
+                closeEditCameraModal();
             }
         }
         
