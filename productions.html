@@ -80,11 +80,11 @@
                     <table class="productions-table" id="currentProductionsTable">
                         <thead>
                             <tr>
-                                <th>Week</th>
+                                <th>KW</th>
+                                <th>Date</th>
                                 <th>Production</th>
                                 <th>Location</th>
                                 <th>Camera</th>
-                                <th>Duration</th>
                                 <th>Event Manager</th>
                                 <th>Cockpit User</th>
                                 <th>Status</th>
@@ -105,6 +105,7 @@
                     <table class="productions-table completed" id="completedProductionsTable">
                         <thead>
                             <tr>
+                                <th>KW</th>
                                 <th>Date</th>
                                 <th>Production</th>
                                 <th>Location</th>
@@ -471,6 +472,15 @@
             return new Date(d.setDate(diff));
         }
         
+        // Kalenderwoche berechnen (ISO 8601)
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+        
         // Kamera-Details anhand Camera-ID finden
         function getCameraDetails(cameraId) {
             const camera = camerasData.find(cam => cam['ID'] === cameraId);
@@ -489,8 +499,26 @@
                 return status === 'active' || status === 'planned';
             });
             
-            // Sortiere nach Startdatum
-            currentAndPlanned.sort((a, b) => new Date(a['Start-Date']) - new Date(b['Start-Date']));
+            // Sortiere nach Kalenderwoche und dann nach Startdatum
+            currentAndPlanned.sort((a, b) => {
+                const dateA = new Date(a['Start-Date']);
+                const dateB = new Date(b['Start-Date']);
+                
+                // Erst nach Kalenderwoche sortieren
+                const weekA = getWeekNumber(dateA);
+                const weekB = getWeekNumber(dateB);
+                const yearA = dateA.getFullYear();
+                const yearB = dateB.getFullYear();
+                
+                if (yearA !== yearB) {
+                    return yearA - yearB;
+                }
+                if (weekA !== weekB) {
+                    return weekA - weekB;
+                }
+                // Bei gleicher Kalenderwoche nach Startdatum sortieren
+                return dateA - dateB;
+            });
             
             currentAndPlanned.forEach(production => {
                 const startDate = new Date(production['Start-Date']);
@@ -506,16 +534,17 @@
                     return `${cameraId.trim()} (${cameraDetails['Arena'] || 'Arena'})`;
                 }).join('<br>');
                 
-                const weekStart = getWeekStart(startDate);
-                const weekStr = formatWeek(weekStart);
+                const weekNumber = getWeekNumber(startDate);
+                const year = startDate.getFullYear();
+                const kwString = `KW ${weekNumber}/${year}`;
                 
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td>${weekStr}</td>
+                    <td><strong>${kwString}</strong></td>
+                    <td>${formatDateRange(startDate, endDate)}</td>
                     <td><strong>${production['Production-Name']}</strong></td>
                     <td>${production['Location']}</td>
                     <td>Cameras:<br>${cameraInfo}</td>
-                    <td>${formatDateRange(startDate, endDate)}</td>
                     <td>${production['Event-Manager']}</td>
                     <td>${production['Cockpit-User']}</td>
                     <td><span class="status-badge ${production['Status']}">${production['Status']}</span></td>
@@ -541,8 +570,28 @@
             // Filtere beendete Produktionen
             const completed = productionsData.filter(production => production['Status'] === 'completed');
             
-            // Sortiere nach Startdatum (neueste zuerst)
-            completed.sort((a, b) => new Date(b['Start-Date']) - new Date(a['Start-Date']));
+            // Sortiere nach Kalenderwoche (neueste zuerst)
+            completed.sort((a, b) => {
+                const dateA = new Date(a['Start-Date']);
+                const dateB = new Date(b['Start-Date']);
+                
+                // Erst nach Jahr sortieren (neueste zuerst)
+                const yearA = dateA.getFullYear();
+                const yearB = dateB.getFullYear();
+                if (yearA !== yearB) {
+                    return yearB - yearA;
+                }
+                
+                // Dann nach Kalenderwoche (neueste zuerst)
+                const weekA = getWeekNumber(dateA);
+                const weekB = getWeekNumber(dateB);
+                if (weekA !== weekB) {
+                    return weekB - weekA;
+                }
+                
+                // Bei gleicher Kalenderwoche nach Startdatum (neueste zuerst)
+                return dateB - dateA;
+            });
             
             completed.forEach(production => {
                 const startDate = new Date(production['Start-Date']);
@@ -558,8 +607,13 @@
                     return `${cameraId.trim()} (${cameraDetails['Arena'] || 'Arena'})`;
                 }).join('<br>');
                 
+                const weekNumber = getWeekNumber(startDate);
+                const year = startDate.getFullYear();
+                const kwString = `KW ${weekNumber}/${year}`;
+                
                 const row = tbody.insertRow();
                 row.innerHTML = `
+                    <td><strong>${kwString}</strong></td>
                     <td>${formatDateRange(startDate, endDate)}</td>
                     <td>${production['Production-Name']}</td>
                     <td>${production['Location']}</td>
@@ -575,23 +629,7 @@
                 `;
             });
         }
-        
-        // Woche formatieren
-        function formatWeek(weekStart) {
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
-            
-            const startStr = weekStart.toLocaleDateString('de-DE', { 
-                day: '2-digit', 
-                month: '2-digit' 
-            });
-            const endStr = weekEnd.toLocaleDateString('de-DE', { 
-                day: '2-digit', 
-                month: '2-digit' 
-            });
-            
-            return `${startStr} - ${endStr}`;
-        }
+
         
         // Datumsbereich formatieren
         function formatDateRange(startDate, endDate) {

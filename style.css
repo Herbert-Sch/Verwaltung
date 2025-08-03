@@ -1076,10 +1076,22 @@ body {
     
     .productions-table th:first-child {
         background: #f8f9fa;
+        font-weight: bold;
+        color: #2c3e50;
+        text-align: center;
+        min-width: 100px;
+    }
+    
+    .productions-table td:first-child {
+        text-align: center;
+        font-weight: 600;
+        color: #2c3e50;
+        background: #f8f9fa;
     }
     
     .active-production td:first-child {
         background: #e8f5e8;
+        color: #155724;
     }
     
     /* Modal Responsive */
