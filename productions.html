@@ -280,29 +280,56 @@
         let camerasData = [];
         let currentEditingId = null;
         
-        // CSV-Daten laden und verarbeiten
+        // JSON-Daten laden und verarbeiten (localStorage respektieren)
         async function loadProductionsData() {
             try {
                 // Prüfe ob lokale Änderungen vorhanden sind
-                const localData = localStorage.getItem('productionsData');
+                const localProductionsData = localStorage.getItem('productionsData');
                 
-                if (localData) {
-                    // Verwende lokale Daten
-                    productionsData = JSON.parse(localData);
+                if (localProductionsData) {
+                    const parsedData = JSON.parse(localProductionsData);
+                    // Erkenne alte CSV-Daten durch das Vorhandensein von alten Feldnamen
+                    if (parsedData.length > 0 && parsedData[0]['Production-ID'] !== undefined) {
+                        // Lokale Daten verwenden (enthalten Benutzer-Änderungen)
+                        productionsData = parsedData;
+                        console.log('📁 Loading productions data from localStorage (with user changes)');
+                        console.log(`Productions: Using ${productionsData.length} productions from localStorage`);
+                    } else {
+                        // Alte/ungültige localStorage-Daten löschen und JSON laden
+                        console.log('🗑️ Clearing invalid localStorage data - loading fresh JSON');
+                        localStorage.removeItem('productionsData');
+                        await loadFreshJSONData();
+                    }
                 } else {
-                    // Productions CSV laden
-                    const productionsResponse = await fetch('productions.csv');
-                    const productionsCSV = await productionsResponse.text();
-                    productionsData = parseCSV(productionsCSV);
+                    // Keine localStorage-Daten vorhanden - JSON laden
+                    await loadFreshJSONData();
                 }
                 
-                // Cameras CSV laden für Referenz
-                const camerasResponse = await fetch('ai_cameras.csv');
-                const camerasCSV = await camerasResponse.text();
-                camerasData = parseCSV(camerasCSV);
+                async function loadFreshJSONData() {
+                    console.log('📄 Loading productions data from JSON file (fresh)');
+                    const productionsResponse = await fetch('productions.json');
+                    const productionsJSON = await productionsResponse.json();
+                    
+                    // JSON-Daten in kompatibles Format konvertieren
+                    productionsData = convertProductionsJSONToLegacyFormat(productionsJSON.productions);
+                    console.log(`Productions: Loaded ${productionsData.length} productions from JSON`);
+                }
+                
+                // Cameras JSON laden für Referenz
+                const camerasResponse = await fetch('ai_cameras.json');
+                const camerasJSON = await camerasResponse.json();
+                
+                // Kamera-Daten in kompatibles Format konvertieren
+                camerasData = convertCamerasJSONToLegacyFormat(camerasJSON.cameras);
+                console.log(`Productions: Loaded ${camerasData.length} cameras from JSON`);
                 
                 // Kamera-Optionen für Formulare laden
                 populateCameraSelects();
+                
+                // Info für Entwickler
+                if (localStorage.getItem('productionsData')) {
+                    console.log('💡 Tip: To reset to original JSON data, run: resetProductionsToJSON()');
+                }
                 
                 // Daten verarbeiten und anzeigen
                 calculateStatistics();
@@ -314,7 +341,44 @@
             }
         }
         
-        // CSV-Parser Funktion
+        // JSON zu Legacy-Format Konvertierung (Productions)
+        function convertProductionsJSONToLegacyFormat(jsonProductions) {
+            return jsonProductions.map(production => ({
+                'Production-ID': production.id.toString(),
+                'Production-Name': production.productionName,
+                'Camera-ID': Array.isArray(production.cameraIds) ? production.cameraIds[0] : production.cameraIds, // Verwende erste Kamera für Kompatibilität
+                'Location': production.location,
+                'Start-Date': production.startDate,
+                'End-Date': production.endDate,
+                'Event-Manager': production.eventManager,
+                'Cockpit-User': production.cockpitUser,
+                'Status': production.status,
+                'Notes': production.notes,
+                // Zusätzliche Felder für erweiterte Funktionalität
+                'All-Camera-IDs': Array.isArray(production.cameraIds) ? production.cameraIds.join(',') : production.cameraIds
+            }));
+        }
+        
+        // JSON zu Legacy-Format Konvertierung (Cameras)
+        function convertCamerasJSONToLegacyFormat(jsonCameras) {
+            return jsonCameras.map(camera => ({
+                'ID': camera.id.toString(),
+                'Camera-ID': camera.cameraId,
+                'Location': camera.location,
+                'Address': camera.address,
+                'Arena': camera.arena,
+                'Installation Type': camera.installationType,
+                'IP Address': camera.ipAddress,
+                'Installation Date': camera.installationDate,
+                'Uninstallation Date': camera.uninstallationDate,
+                'Status': camera.status,
+                'Event Manager': camera.eventManager,
+                'Local Contact': camera.localContact,
+                'Server-ID': camera.serverId
+            }));
+        }
+        
+        // CSV-Parser Funktion (für Legacy-Kompatibilität behalten)
         function parseCSV(csvText) {
             const lines = csvText.split('\n');
             const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
@@ -431,7 +495,16 @@
             currentAndPlanned.forEach(production => {
                 const startDate = new Date(production['Start-Date']);
                 const endDate = new Date(production['End-Date']);
-                const cameraDetails = getCameraDetails(production['Camera-ID']);
+                
+                // Mehrere Kameras unterstützen
+                const allCameraIds = production['All-Camera-IDs'] || production['Camera-ID'];
+                const cameraIdsList = typeof allCameraIds === 'string' ? allCameraIds.split(',') : [allCameraIds];
+                
+                // Kamera-Details für alle Kameras sammeln
+                const cameraInfo = cameraIdsList.map(cameraId => {
+                    const cameraDetails = getCameraDetails(cameraId.trim());
+                    return `${cameraId.trim()} (${cameraDetails['Arena'] || 'Arena'})`;
+                }).join('<br>');
                 
                 const weekStart = getWeekStart(startDate);
                 const weekStr = formatWeek(weekStart);
@@ -441,7 +514,7 @@
                     <td>${weekStr}</td>
                     <td><strong>${production['Production-Name']}</strong></td>
                     <td>${production['Location']}</td>
-                    <td>Camera ${production['Camera-ID']} (${cameraDetails['Arena'] || 'Main Arena'})</td>
+                    <td>Cameras:<br>${cameraInfo}</td>
                     <td>${formatDateRange(startDate, endDate)}</td>
                     <td>${production['Event-Manager']}</td>
                     <td>${production['Cockpit-User']}</td>
@@ -474,14 +547,23 @@
             completed.forEach(production => {
                 const startDate = new Date(production['Start-Date']);
                 const endDate = new Date(production['End-Date']);
-                const cameraDetails = getCameraDetails(production['Camera-ID']);
+                
+                // Mehrere Kameras unterstützen
+                const allCameraIds = production['All-Camera-IDs'] || production['Camera-ID'];
+                const cameraIdsList = typeof allCameraIds === 'string' ? allCameraIds.split(',') : [allCameraIds];
+                
+                // Kamera-Details für alle Kameras sammeln
+                const cameraInfo = cameraIdsList.map(cameraId => {
+                    const cameraDetails = getCameraDetails(cameraId.trim());
+                    return `${cameraId.trim()} (${cameraDetails['Arena'] || 'Arena'})`;
+                }).join('<br>');
                 
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td>${formatDateRange(startDate, endDate)}</td>
                     <td>${production['Production-Name']}</td>
                     <td>${production['Location']}</td>
-                    <td>Camera ${production['Camera-ID']} (${cameraDetails['Arena'] || 'Main Arena'})</td>
+                    <td>Cameras:<br>${cameraInfo}</td>
                     <td>${production['Event-Manager']}</td>
                     <td>${production['Cockpit-User']}</td>
                     <td>${production['Notes'] || '-'}</td>
@@ -786,6 +868,16 @@
                 closeEditProductionModal();
             }
         }
+        
+        // Helper-Funktion: Zurück zu originalen JSON-Daten (für Konsole)
+        function resetProductionsToJSON() {
+            localStorage.removeItem('productionsData');
+            console.log('🗑️ Cleared localStorage - reloading page to show original JSON data...');
+            location.reload();
+        }
+        
+        // Global verfügbar machen für Konsole
+        window.resetProductionsToJSON = resetProductionsToJSON;
         
         // Daten beim Laden der Seite laden
         document.addEventListener('DOMContentLoaded', loadProductionsData);
