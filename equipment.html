@@ -52,6 +52,11 @@
                         <option value="">All Countries</option>
                     </select>
                 </div>
+                <div class="debug-controls" style="margin-left: auto;">
+                    <button onclick="reloadFromCSV()" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" title="Reload data from CSV file">
+                        🔄 Reload CSV
+                    </button>
+                </div>
             </div>
             
             <!-- Aktive Kameras -->
@@ -372,14 +377,15 @@
         let currentEditingCameraId = null;
         
         // CSV-Daten laden und Equipment anzeigen
-        async function loadEquipmentData() {
+        async function loadEquipmentData(forceReload = false) {
             try {
                 // Prüfe ob lokale Änderungen vorhanden sind
                 const localData = localStorage.getItem('camerasData');
                 
-                if (localData) {
+                if (localData && !forceReload) {
                     // Verwende lokale Daten
                     camerasData = JSON.parse(localData);
+                    console.log('📁 Loading camera data from localStorage');
                 } else {
                     // CSV laden
                     const response = await fetch('ai_cameras.csv');
@@ -387,9 +393,16 @@
                     
                     // CSV parsen
                     camerasData = parseCSV(csvText);
+                    console.log('📄 Loading camera data from CSV file');
+                    
+                    if (forceReload) {
+                        // Lösche alte localStorage-Daten
+                        localStorage.removeItem('camerasData');
+                        console.log('🗑️ Cleared localStorage camera data');
+                    }
                 }
                 
-                // Debug: Kamera-Kategorisierung
+                // Debug: Kamera-Kategorisierung 
                 debugCameraCategories();
                 
                 // Länder-Dropdown befüllen
@@ -405,10 +418,21 @@
             }
         }
         
+        // CSV-Daten neu laden (für Debugging)
+        function reloadFromCSV() {
+            console.log('🔄 Reloading data from CSV...');
+            loadEquipmentData(true);
+        }
+        
         // Debug-Funktion: Zeige Kamera-Kategorisierung
         function debugCameraCategories() {
             console.log('=== CAMERA CATEGORIZATION DEBUG ===');
             console.log(`Total cameras loaded: ${camerasData.length}`);
+            console.log('Data source:', localStorage.getItem('camerasData') ? 'localStorage' : 'CSV file');
+            
+            // Zeige alle rohen Daten
+            console.log('All camera data:');
+            camerasData.forEach(cam => console.log(`  ID: ${cam['ID']}, Camera-ID: ${cam['Camera-ID']}, Location: ${cam['Location']}, Status: "${cam['Status']}" (type: ${typeof cam['Status']})`));
             
             const activeCameras = camerasData.filter(camera => camera['Status'] === 'Active');
             const pendingCameras = camerasData.filter(camera => {
@@ -450,7 +474,7 @@
                     return !isActive && !isPending && !isInactive;
                 });
                 console.log(`Uncategorized cameras: ${uncategorized.length}`);
-                uncategorized.forEach(cam => console.log(`  - ${cam['Camera-ID']} (${cam['Location']}) - Status: "${cam['Status']}"`));
+                uncategorized.forEach(cam => console.log(`  - ${cam['Camera-ID']} (${cam['Location']}) - Status: "${cam['Status']}" (expected: Active/Inactive/Installation)`));
             }
             
             console.log('=== END DEBUG ===');
@@ -462,6 +486,8 @@
             const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
             const data = [];
             
+            console.log('CSV Headers:', headers);
+            
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (line) {
@@ -469,12 +495,22 @@
                     if (values.length === headers.length) {
                         const row = {};
                         headers.forEach((header, index) => {
-                            row[header] = values[index];
+                            // Bereinige alle Werte (entferne Anführungszeichen und trimme)
+                            row[header] = values[index].replace(/"/g, '').trim();
                         });
                         data.push(row);
+                        
+                        // Debug für erste 3 Zeilen
+                        if (i <= 3) {
+                            console.log(`Row ${i}:`, row);
+                        }
+                    } else {
+                        console.warn(`Row ${i} has ${values.length} values but expected ${headers.length}:`, values);
                     }
                 }
             }
+            
+            console.log(`Parsed ${data.length} camera records from CSV`);
             return data;
         }
         
@@ -1231,11 +1267,17 @@
         
         // IP-Adresse formatieren mit Erreichbarkeitsprüfung
         function formatIPAddress(ipAddress, cameraId) {
-            if (!ipAddress || ipAddress.trim() === '') {
-                return '-';
+            if (!ipAddress || ipAddress.trim() === '' || ipAddress.trim() === '-') {
+                return '<span class="no-ip">No IP Address</span>';
             }
             
             const cleanIP = ipAddress.trim();
+            
+            // Validiere IP-Adresse Format
+            if (!isValidIPAddress(cleanIP)) {
+                return `<span class="invalid-ip" title="Invalid IP format">${cleanIP} ⚠</span>`;
+            }
+            
             const statusId = `ip-status-${cameraId}`;
             
             // IP-Adresse als anklickbarer Link mit Status-Icon
@@ -1256,61 +1298,125 @@
             return html;
         }
         
+        // IP-Adresse validieren
+        function isValidIPAddress(ip) {
+            // Prüfe auf IP-Adresse oder IP:Port Format
+            const ipPattern = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/;
+            
+            if (!ipPattern.test(ip)) {
+                return false;
+            }
+            
+            // Extrahiere IP-Teil (ohne Port)
+            const ipPart = ip.split(':')[0];
+            const octets = ipPart.split('.');
+            
+            // Prüfe jeden Oktet
+            for (const octet of octets) {
+                const num = parseInt(octet, 10);
+                if (num < 0 || num > 255) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
         // IP-Erreichbarkeit prüfen
         async function checkIPConnectivity(ipAddress, statusId) {
             const statusElement = document.getElementById(statusId);
             if (!statusElement) return;
             
+            // Doppelte Validierung der IP-Adresse
+            if (!ipAddress || !isValidIPAddress(ipAddress)) {
+                statusElement.innerHTML = '<span class="ip-error" title="Invalid IP address">⚠</span>';
+                statusElement.className = 'ip-status error';
+                return;
+            }
+            
             try {
-                // Versuche verschiedene Ports/Protokolle
-                const testUrls = [
-                    `http://${ipAddress}`,
-                    `http://${ipAddress}:80`,
-                    `http://${ipAddress}:8080`,
-                    `http://${ipAddress}:8888`
-                ];
-                
+                // Verwende Image-basierte Prüfung für bessere Kompatibilität mit HTTPS
+                const isHTTPS = window.location.protocol === 'https:';
                 let isReachable = false;
                 
-                for (const url of testUrls) {
-                    try {
-                        // Timeout-basierte Anfrage mit AbortController
-                        const controller = new AbortController();
-                        const timeout = setTimeout(() => controller.abort(), 3000);
-                        
-                        const response = await fetch(url, {
-                            method: 'HEAD',
-                            mode: 'no-cors', // Umgeht CORS-Probleme
-                            signal: controller.signal
-                        });
-                        
-                        clearTimeout(timeout);
-                        isReachable = true;
-                        break;
-                        
-                    } catch (error) {
-                        // Auch bei CORS-Fehlern könnte der Server erreichbar sein
-                        if (error.name !== 'AbortError') {
-                            isReachable = true; // Antwort erhalten = Server erreichbar
-                            break;
-                        }
-                    }
+                if (isHTTPS) {
+                    // Für HTTPS-Seiten: Verwende alternative Prüfmethode
+                    isReachable = await checkIPWithImage(ipAddress);
+                } else {
+                    // Für HTTP-Seiten: Verwende fetch-basierte Prüfung
+                    isReachable = await checkIPWithFetch(ipAddress);
                 }
                 
                 // Status-Icon aktualisieren
                 if (isReachable) {
-                    statusElement.innerHTML = '<span class="ip-success" title="IP Address is reachable">✓</span>';
+                    statusElement.innerHTML = '<span class="ip-success" title="IP Address appears to be reachable">✓</span>';
                     statusElement.className = 'ip-status success';
                 } else {
-                    statusElement.innerHTML = '<span class="ip-error" title="IP Address is not reachable">⚠</span>';
+                    statusElement.innerHTML = '<span class="ip-error" title="IP Address is not reachable or blocked by browser security">⚠</span>';
                     statusElement.className = 'ip-status error';
                 }
                 
             } catch (error) {
                 console.log(`IP check failed for ${ipAddress}:`, error);
-                statusElement.innerHTML = '<span class="ip-error" title="Could not check IP connectivity">⚠</span>';
-                statusElement.className = 'ip-status error';
+                statusElement.innerHTML = '<span class="ip-unknown" title="Could not check IP connectivity due to browser restrictions">?</span>';
+                statusElement.className = 'ip-status unknown';
             }
+        }
+        
+        // Fetch-basierte IP-Prüfung (für HTTP)
+        async function checkIPWithFetch(ipAddress) {
+            const testUrls = [
+                `http://${ipAddress}`,
+                `http://${ipAddress}:80`,
+                `http://${ipAddress}:8080`,
+                `http://${ipAddress}:8888`
+            ];
+            
+            for (const url of testUrls) {
+                try {
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 2000);
+                    
+                    const response = await fetch(url, {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeout);
+                    return true; // Erfolgreiche Antwort
+                    
+                } catch (error) {
+                    if (error.name !== 'AbortError' && error.name !== 'TypeError') {
+                        // Andere Fehler deuten oft auf einen erreichbaren Server hin
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // Image-basierte IP-Prüfung (für HTTPS)
+        async function checkIPWithImage(ipAddress) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const timeout = setTimeout(() => {
+                    resolve(false); // Timeout = nicht erreichbar
+                }, 3000);
+                
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    resolve(true); // Bild geladen = Server erreichbar
+                };
+                
+                img.onerror = () => {
+                    clearTimeout(timeout);
+                    resolve(true); // Fehler beim Laden kann auch bedeuten: Server erreichbar, aber kein Bild
+                };
+                
+                // Versuche ein kleines Bild vom Server zu laden
+                img.src = `http://${ipAddress}/favicon.ico?t=${Date.now()}`;
+            });
         }
         
         // Modal schließen beim Klick außerhalb (erweitert)

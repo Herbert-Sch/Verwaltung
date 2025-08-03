@@ -1282,6 +1282,31 @@ body {
     color: #dc2626;
 }
 
+.ip-status.unknown {
+    background-color: #f9fafb;
+    border: 1px solid #9ca3af;
+}
+
+.ip-status.unknown .ip-unknown {
+    color: #6b7280;
+}
+
+.no-ip {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+.invalid-ip {
+    color: #dc2626;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    padding: 0.1rem 0.3rem;
+    background-color: #fef2f2;
+    border-radius: 3px;
+    border: 1px solid #dc2626;
+}
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
