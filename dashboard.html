@@ -275,16 +275,36 @@
             
             console.log('Lade Kamera-Standorte auf Karte:', cameraData);
             
+            // Array für alle Koordinaten sammeln (für automatisches Fitting)
+            const allCoordinates = [];
+            
             // Für jede Kamera einen Marker hinzufügen
             for (const camera of cameraData) {
                 try {
                     const coords = await geocodeAddress(camera.address);
                     if (coords) {
                         addCameraMarker(coords.lat, coords.lng, camera);
+                        allCoordinates.push([coords.lat, coords.lng]);
                     }
                 } catch (error) {
                     console.error(`Fehler beim Geocoding von ${camera.address}:`, error);
                 }
+            }
+            
+            // Karte automatisch auf alle Punkte ausrichten
+            if (allCoordinates.length > 0) {
+                console.log(`🗺️ Fitting map to ${allCoordinates.length} camera locations`);
+                const group = new L.featureGroup();
+                allCoordinates.forEach(coord => {
+                    L.marker(coord).addTo(group);
+                });
+                
+                // Automatisch auf alle Punkte zoomen mit etwas Padding
+                worldMap.fitBounds(group.getBounds(), {
+                    padding: [20, 20] // 20px Abstand zum Rand
+                });
+            } else {
+                console.log('⚠️ No camera coordinates found, keeping default view');
             }
         }
         
