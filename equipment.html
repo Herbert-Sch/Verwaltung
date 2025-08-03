@@ -228,8 +228,9 @@
                             <select id="status" name="status" required>
                                 <option value="">Select Status</option>
                                 <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Installation">Pending Installation</option>
                                 <option value="Storage">Storage</option>
-                                <option value="">Pending Installation</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -324,8 +325,9 @@
                             <select id="editStatus" name="editStatus" required>
                                 <option value="">Select Status</option>
                                 <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Installation">Pending Installation</option>
                                 <option value="Storage">Storage</option>
-                                <option value="">Pending Installation</option>
                             </select>
                         </div>
                     </div>
@@ -387,6 +389,9 @@
                     camerasData = parseCSV(csvText);
                 }
                 
+                // Debug: Kamera-Kategorisierung
+                debugCameraCategories();
+                
                 // Länder-Dropdown befüllen
                 populateCountryFilter();
                 
@@ -398,6 +403,57 @@
             } catch (error) {
                 console.error('Fehler beim Laden der Equipment-Daten:', error);
             }
+        }
+        
+        // Debug-Funktion: Zeige Kamera-Kategorisierung
+        function debugCameraCategories() {
+            console.log('=== CAMERA CATEGORIZATION DEBUG ===');
+            console.log(`Total cameras loaded: ${camerasData.length}`);
+            
+            const activeCameras = camerasData.filter(camera => camera['Status'] === 'Active');
+            const pendingCameras = camerasData.filter(camera => {
+                const status = camera['Status'];
+                return status === '' || 
+                       status === 'pending' || 
+                       status === 'Installation' ||
+                       status === 'Pending Installation' ||
+                       (!status && camera['Camera-ID']);
+            });
+            const inactiveCameras = camerasData.filter(camera => {
+                const status = camera['Status'];
+                return status === 'Inactive' || 
+                       status === 'Storage' || 
+                       status === 'Offline' ||
+                       status === 'Decommissioned' ||
+                       status === 'Stored';
+            });
+            
+            console.log(`Active cameras: ${activeCameras.length}`);
+            activeCameras.forEach(cam => console.log(`  - ${cam['Camera-ID']} (${cam['Location']}) - Status: "${cam['Status']}"`));
+            
+            console.log(`Pending cameras: ${pendingCameras.length}`);
+            pendingCameras.forEach(cam => console.log(`  - ${cam['Camera-ID']} (${cam['Location']}) - Status: "${cam['Status']}"`));
+            
+            console.log(`Inactive cameras: ${inactiveCameras.length}`);
+            inactiveCameras.forEach(cam => console.log(`  - ${cam['Camera-ID']} (${cam['Location']}) - Status: "${cam['Status']}"`));
+            
+            const totalCategorized = activeCameras.length + pendingCameras.length + inactiveCameras.length;
+            console.log(`Total categorized: ${totalCategorized}`);
+            
+            if (totalCategorized !== camerasData.length) {
+                console.warn('⚠️ MISSING CAMERAS - Some cameras are not categorized!');
+                const uncategorized = camerasData.filter(camera => {
+                    const status = camera['Status'];
+                    const isActive = status === 'Active';
+                    const isPending = status === '' || status === 'pending' || status === 'Installation' || status === 'Pending Installation' || (!status && camera['Camera-ID']);
+                    const isInactive = status === 'Inactive' || status === 'Storage' || status === 'Offline' || status === 'Decommissioned' || status === 'Stored';
+                    return !isActive && !isPending && !isInactive;
+                });
+                console.log(`Uncategorized cameras: ${uncategorized.length}`);
+                uncategorized.forEach(cam => console.log(`  - ${cam['Camera-ID']} (${cam['Location']}) - Status: "${cam['Status']}"`));
+            }
+            
+            console.log('=== END DEBUG ===');
         }
         
         // CSV-Parser Funktion
@@ -512,10 +568,14 @@
             const tbody = document.getElementById('pendingCamerasBody');
             tbody.innerHTML = '';
             
-            let pendingCameras = camerasData.filter(camera => 
-                camera['Status'] === '' || camera['Status'] === 'pending' || 
-                (camera['Camera-ID'] && !camera['Status'])
-            );
+            let pendingCameras = camerasData.filter(camera => {
+                const status = camera['Status'];
+                return status === '' || 
+                       status === 'pending' || 
+                       status === 'Installation' ||
+                       status === 'Pending Installation' ||
+                       (!status && camera['Camera-ID']);
+            });
             pendingCameras = sortCamerasByCountry(pendingCameras, selectedCountry);
             
             pendingCameras.forEach(camera => {
@@ -541,12 +601,19 @@
             });
         }
         
-        // Inaktive Kameras anzeigen
+        // Inaktive Kameras anzeigen  
         function displayInactiveCameras(selectedCountry = '') {
             const tbody = document.getElementById('inactiveCamerasBody');
             tbody.innerHTML = '';
             
-            let inactiveCameras = camerasData.filter(camera => camera['Status'] === 'Inactive' || camera['Status'] === 'Storage');
+            let inactiveCameras = camerasData.filter(camera => {
+                const status = camera['Status'];
+                return status === 'Inactive' || 
+                       status === 'Storage' || 
+                       status === 'Offline' ||
+                       status === 'Decommissioned' ||
+                       status === 'Stored';
+            });
             inactiveCameras = sortCamerasByCountry(inactiveCameras, selectedCountry);
             
             inactiveCameras.forEach(camera => {
