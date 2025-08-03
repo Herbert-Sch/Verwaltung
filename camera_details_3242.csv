@@ -1,0 +1,22 @@
+Field,Value
+Camera-ID,3242
+Address,"World Equestrian Center, 1390 NW 80th Ave, Ocala, FL 34475, USA"
+Installation-Details,"Professional installation at WEC Ocala Arena 4. Multi-purpose arena setup."
+Cable-Installation,"Underground cable system with pull-boxes for maintenance."
+Power-Source,"Smart power management with load balancing."
+Audio-Setup,"Multi-zone audio with automatic mixing."
+Internet-Connection,"Gigabit fiber with failover to LTE."
+ATMO-Microphones,"Adaptive microphone array with wind protection."
+XLR-1,"Main Commentary"
+XLR-2,"Side Commentary"
+Internet-Provider,"Fiber Primary / LTE Backup"
+Server-ID,fhd9bb3c
+Audio-Mixer-Link,66.179.242.241/8888
+Bonding-Service,"Tertiary Server - USA East"
+Installation-Type,Permanent
+Arena-Name,"WEC Ocala Arena 4"
+Power-Location,"Smart electrical panel"
+Audio-Location,"Mobile broadcast unit"
+Arena-Usage,"Multi-discipline equestrian events"
+Camera-Features,"PTZ capable, auto-tracking"
+Backup-Systems,"Full redundancy on all systems" 

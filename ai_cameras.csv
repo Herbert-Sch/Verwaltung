@@ -1,0 +1,26 @@
+ID,Camera-ID,Location,Address,Arena,Installation Type,IP Address,Installation Date,Uninstallation Date,Status,Event Manager,Local Contact,Server-ID
+1,1479,Wickrath,"Mönchengladbach, Germany",Indoor,,85.215.242.18:8888,,,Active,,,
+2,1484,,,,,,,Storage,,,
+3,3318,Kranichstein,"Darmstadt, Germany",Indoor,,87.106.144.242:8888,,,Active,,,
+4,3305,Kranichstein,"Darmstadt, Germany",Dressage Arena 1,,212.132.124.211:8888,,,Active,,,
+5,3317,Wenders,"Krefeld, Germany",Tournament Service,Mobile,-,,,Active,,,
+6,3304,Lemwerder,"Lemwerder, Germany",Riding Arena,,212.132.124.212:8888,,,Active,,,
+7,3314,Ladenburg,"Ladenburg, Germany",Riding Arena,,87.106.144.246:8888,,,Active,,,
+8,2836,Peelbergen,"Kronenberg, Netherlands",Lakeside Farm Arena,,87.106.176.134:8888,,,Active,,,
+9,1485,Peelbergen,"Kronenberg, Netherlands",Arena West,,87.106.176.137:8888,,,Active,,,
+10,3217,Peelbergen,"Kronenberg, Netherlands",EquiHome Arena,,87.106.176.136:8888,,,Active,,,
+11,3316,WEC Ocala,"Ocala, FL, USA",Arena 1,,66.179.242.155:8888,,,Active,,,fhdb9b6f
+12,3255,WEC Ocala,"Ocala, FL, USA",Arena 2,,74.208.112.42:8888,,,Active,,,fhdb82ec
+13,3242,WEC Ocala,"Ocala, FL, USA",Arena 4,,66.179.242.241:8888,,,Active,,,fhd9bb3c
+14,3277,,,,,,,,,,,
+15,3257,,,,,,,,,,,238f1548
+16,3290,,,,,,,,,,,fhdce4bc
+17,3273,,,,,,,,,,,ae260d79
+18,3287,,,,,,,,,,,fhd33618
+19,3323,Gaenserig Mediatec,"Hannover, Germany",,,194.164.206.214:8888,,,Active,,,
+20,743,X,,,,,,Storage,,,
+21,1403,,"Munich, Germany",OK,,,,Storage,,,c945490b
+22,3248,Peter Suenkel,"Hamburg, Germany",Tournament Service,Mobile,,,,Active,,,fhd8a6f5
+23,3254,,,,,,,Storage,,,fhd29e22
+24,3206,,,,,,,Storage,,,
+25,3283,,,,,,,Storage,,,fhda3e5e 

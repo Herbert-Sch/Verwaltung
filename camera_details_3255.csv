@@ -1,0 +1,21 @@
+Field,Value
+Camera-ID,3255
+Address,"World Equestrian Center, 1390 NW 80th Ave, Ocala, FL 34475, USA"
+Installation-Details,"Professional installation at WEC Ocala Arena 2. Secondary arena with full coverage."
+Cable-Installation,"Fiber optic backbone with redundant connections."
+Power-Source,"UPS-backed power system with generator backup."
+Audio-Setup,"Advanced audio system with noise cancellation."
+Internet-Connection,"Dual fiber connections for redundancy."
+ATMO-Microphones,"360-degree ambient sound coverage."
+XLR-1,"Commentator Feed"
+XLR-2,"Arena Ambience"
+Internet-Provider,"Fiber - Redundant"
+Server-ID,fhdb82ec
+Audio-Mixer-Link,74.208.112.42/8888
+Bonding-Service,"Secondary Server - USA East"
+Installation-Type,Permanent
+Arena-Name,"WEC Ocala Arena 2"
+Power-Location,"Dedicated electrical room"
+Audio-Location,"Broadcast control room"
+Special-Features,"4K capable, night vision"
+Maintenance-Schedule,"Monthly professional service" 

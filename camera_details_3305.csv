@@ -1,0 +1,21 @@
+Field,Value
+Camera-ID,3305
+Address,"Kranichsteiner Str. 252, 64289 Darmstadt"
+Installation-Details,"Die Kamera wurde an einen mobilen Mast montiert. Dieser steht gegenüber der Trebühne oder auf der Linken seite des Richterturm."
+Cable-Installation,"Die Leitungen wurden in ein Leerrohre zwischen Richterturm und Mast verlegt."
+Power-Source,"Strom kommt aus dem 1. OG des Richtertum und wurde an der Steckdose links im Richtertum abgezweigt."
+Audio-Setup,"Der Ton kommt über ein LAN Kabel mit Adapter bzw. 4 XLR Verbindungen. Die Anschlüsse sind links unter dem Tisch."
+Internet-Connection,"Internet kommt über LTE (1x Telekom)."
+ATMO-Microphones,"Die ATMO Mikrofone hängen direkt am Mast."
+XLR-1,Mikrofone
+XLR-2,Musik
+Internet-Provider,"Internet kommt über LTE. (Telekom)"
+SIM-Number,97820561-8
+PIN,6400 / 0660
+PUK,61918331 / 61029681
+Audio-Mixer-Link,194.164.199.35/8888
+Bonding-Service,"Server 1 - 194.164.199.35"
+Installation-Type,Mobile
+Mast-Position,"Gegenüber der Trebühne oder links vom Richterturm"
+Power-Location,"1. OG Richterturm, linke Steckdose"
+Audio-Location,"Links unter dem Tisch" 

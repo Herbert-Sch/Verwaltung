@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Camera Management - Productions</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>AI Camera Management</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span>!</span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+        
+        <nav class="dashboard-nav">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="productions.html" class="nav-link active">Productions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="equipment.html" class="nav-link">Equipment</a>
+                </li>
+                <li class="nav-item">
+                    <a href="installations.html" class="nav-link">Installations</a>
+                </li>
+                <li class="nav-item">
+                    <a href="finance.html" class="nav-link">Finance</a>
+                </li>
+            </ul>
+        </nav>
+        
+        <main class="dashboard-content">
+            <h2>Productions</h2>
+            
+            <!-- Produktions-Statistiken -->
+            <div class="production-stats">
+                <div class="stats-row">
+                    <div class="stat-card total">
+                        <div class="stat-info">
+                            <h3>Productions This Year</h3>
+                            <p class="stat-number" id="yearlyProductions">-</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card current">
+                        <div class="stat-info">
+                            <h3>This Week</h3>
+                            <p class="stat-number" id="weeklyProductions">-</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card planned">
+                        <div class="stat-info">
+                            <h3>Planned Productions</h3>
+                            <p class="stat-number" id="plannedProductions">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Aktuelle und kommende Produktionen -->
+            <div class="productions-section">
+                <div class="section-header">
+                    <h3>Current & Upcoming Productions</h3>
+                    <button class="add-production-btn" onclick="openAddProductionModal()">
+                        <span>+</span> Add Production
+                    </button>
+                </div>
+                <div class="productions-table-container">
+                    <table class="productions-table" id="currentProductionsTable">
+                        <thead>
+                            <tr>
+                                <th>Week</th>
+                                <th>Production</th>
+                                <th>Location</th>
+                                <th>Camera</th>
+                                <th>Duration</th>
+                                <th>Event Manager</th>
+                                <th>Cockpit User</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="currentProductionsBody">
+                            <!-- Dynamisch geladen -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Beendete Produktionen -->
+            <div class="completed-productions-section">
+                <h3>Completed Productions</h3>
+                <div class="productions-table-container">
+                    <table class="productions-table completed" id="completedProductionsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Production</th>
+                                <th>Location</th>
+                                <th>Camera</th>
+                                <th>Event Manager</th>
+                                <th>Cockpit User</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="completedProductionsBody">
+                            <!-- Dynamisch geladen -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modal für neue Produktion hinzufügen -->
+    <div id="addProductionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Production</h3>
+                <span class="modal-close" onclick="closeAddProductionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addProductionForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productionName">Production Name *</label>
+                            <input type="text" id="productionName" name="productionName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cameraId">Camera *</label>
+                            <select id="cameraId" name="cameraId" required>
+                                <option value="">Select Camera</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Start Date *</label>
+                            <input type="date" id="startDate" name="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date *</label>
+                            <input type="date" id="endDate" name="endDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventManager">Event Manager *</label>
+                            <input type="text" id="eventManager" name="eventManager" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cockpitUser">Cockpit User *</label>
+                            <input type="text" id="cockpitUser" name="cockpitUser" placeholder="Enter cockpit user/team" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status">Status *</label>
+                            <select id="status" name="status" required>
+                                <option value="planned">Planned</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">Notes</label>
+                            <input type="text" id="notes" name="notes" placeholder="Optional notes">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeAddProductionModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="saveNewProduction()">Save Production</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal für Produktion bearbeiten -->
+    <div id="editProductionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Production</h3>
+                <span class="modal-close" onclick="closeEditProductionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editProductionForm">
+                    <input type="hidden" id="editProductionId" name="editProductionId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editProductionName">Production Name *</label>
+                            <input type="text" id="editProductionName" name="editProductionName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCameraId">Camera *</label>
+                            <select id="editCameraId" name="editCameraId" required>
+                                <option value="">Select Camera</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editStartDate">Start Date *</label>
+                            <input type="date" id="editStartDate" name="editStartDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEndDate">End Date *</label>
+                            <input type="date" id="editEndDate" name="editEndDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEventManager">Event Manager *</label>
+                            <input type="text" id="editEventManager" name="editEventManager" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCockpitUser">Cockpit User *</label>
+                            <input type="text" id="editCockpitUser" name="editCockpitUser" placeholder="Enter cockpit user/team" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editStatus">Status *</label>
+                            <select id="editStatus" name="editStatus" required>
+                                <option value="planned">Planned</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editNotes">Notes</label>
+                            <input type="text" id="editNotes" name="editNotes" placeholder="Optional notes">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-danger" onclick="deleteProduction()">Delete</button>
+                <button type="button" class="btn-secondary" onclick="closeEditProductionModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="saveEditedProduction()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check if user is logged in
+        const currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('userName').textContent = JSON.parse(currentUser).fullName;
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+        
+        // Globale Variablen
+        let productionsData = [];
+        let camerasData = [];
+        let currentEditingId = null;
+        
+        // CSV-Daten laden und verarbeiten
+        async function loadProductionsData() {
+            try {
+                // Prüfe ob lokale Änderungen vorhanden sind
+                const localData = localStorage.getItem('productionsData');
+                
+                if (localData) {
+                    // Verwende lokale Daten
+                    productionsData = JSON.parse(localData);
+                } else {
+                    // Productions CSV laden
+                    const productionsResponse = await fetch('productions.csv');
+                    const productionsCSV = await productionsResponse.text();
+                    productionsData = parseCSV(productionsCSV);
+                }
+                
+                // Cameras CSV laden für Referenz
+                const camerasResponse = await fetch('ai_cameras.csv');
+                const camerasCSV = await camerasResponse.text();
+                camerasData = parseCSV(camerasCSV);
+                
+                // Kamera-Optionen für Formulare laden
+                populateCameraSelects();
+                
+                // Daten verarbeiten und anzeigen
+                calculateStatistics();
+                displayCurrentProductions();
+                displayCompletedProductions();
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Produktionsdaten:', error);
+            }
+        }
+        
+        // CSV-Parser Funktion
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line) {
+                    const values = parseCSVLine(line);
+                    if (values.length === headers.length) {
+                        const row = {};
+                        headers.forEach((header, index) => {
+                            row[header] = values[index];
+                        });
+                        data.push(row);
+                    }
+                }
+            }
+            return data;
+        }
+        
+        // CSV-Zeile parsen (berücksichtigt Anführungszeichen)
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+        
+        // Statistiken berechnen
+        function calculateStatistics() {
+            const currentYear = new Date().getFullYear();
+            const currentDate = new Date();
+            const currentWeekStart = getWeekStart(currentDate);
+            const currentWeekEnd = new Date(currentWeekStart);
+            currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
+            
+            let yearlyCount = 0;
+            let weeklyCount = 0;
+            let plannedCount = 0;
+            
+            productionsData.forEach(production => {
+                const startDate = new Date(production['Start-Date']);
+                const endDate = new Date(production['End-Date']);
+                const status = production['Status'];
+                
+                // Jährliche Produktionen
+                if (startDate.getFullYear() === currentYear) {
+                    yearlyCount++;
+                }
+                
+                // Wöchentliche Produktionen (diese Woche)
+                if ((startDate >= currentWeekStart && startDate <= currentWeekEnd) ||
+                    (endDate >= currentWeekStart && endDate <= currentWeekEnd) ||
+                    (startDate <= currentWeekStart && endDate >= currentWeekEnd)) {
+                    weeklyCount++;
+                }
+                
+                // Geplante Produktionen
+                if (status === 'planned') {
+                    plannedCount++;
+                }
+            });
+            
+            // Statistiken anzeigen
+            document.getElementById('yearlyProductions').textContent = yearlyCount;
+            document.getElementById('weeklyProductions').textContent = weeklyCount;
+            document.getElementById('plannedProductions').textContent = plannedCount;
+        }
+        
+        // Wochenanfang berechnen (Montag)
+        function getWeekStart(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+        
+        // Kamera-Details anhand Camera-ID finden
+        function getCameraDetails(cameraId) {
+            const camera = camerasData.find(cam => cam['ID'] === cameraId);
+            return camera || { Location: 'Unknown', Arena: 'N/A' };
+        }
+        
+        // Aktuelle und kommende Produktionen anzeigen
+        function displayCurrentProductions() {
+            const currentDate = new Date();
+            const tbody = document.getElementById('currentProductionsBody');
+            tbody.innerHTML = '';
+            
+            // Filtere aktuelle und geplante Produktionen
+            const currentAndPlanned = productionsData.filter(production => {
+                const status = production['Status'];
+                return status === 'active' || status === 'planned';
+            });
+            
+            // Sortiere nach Startdatum
+            currentAndPlanned.sort((a, b) => new Date(a['Start-Date']) - new Date(b['Start-Date']));
+            
+            currentAndPlanned.forEach(production => {
+                const startDate = new Date(production['Start-Date']);
+                const endDate = new Date(production['End-Date']);
+                const cameraDetails = getCameraDetails(production['Camera-ID']);
+                
+                const weekStart = getWeekStart(startDate);
+                const weekStr = formatWeek(weekStart);
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${weekStr}</td>
+                    <td><strong>${production['Production-Name']}</strong></td>
+                    <td>${production['Location']}</td>
+                    <td>Camera ${production['Camera-ID']} (${cameraDetails['Arena'] || 'Main Arena'})</td>
+                    <td>${formatDateRange(startDate, endDate)}</td>
+                    <td>${production['Event-Manager']}</td>
+                    <td>${production['Cockpit-User']}</td>
+                    <td><span class="status-badge ${production['Status']}">${production['Status']}</span></td>
+                    <td>
+                        <button class="edit-btn" onclick="openEditProductionModal('${production['Production-ID']}')">
+                            Edit
+                        </button>
+                    </td>
+                `;
+                
+                // Highlight aktuelle Produktionen
+                if (production['Status'] === 'active') {
+                    row.classList.add('active-production');
+                }
+            });
+        }
+        
+        // Beendete Produktionen anzeigen
+        function displayCompletedProductions() {
+            const tbody = document.getElementById('completedProductionsBody');
+            tbody.innerHTML = '';
+            
+            // Filtere beendete Produktionen
+            const completed = productionsData.filter(production => production['Status'] === 'completed');
+            
+            // Sortiere nach Startdatum (neueste zuerst)
+            completed.sort((a, b) => new Date(b['Start-Date']) - new Date(a['Start-Date']));
+            
+            completed.forEach(production => {
+                const startDate = new Date(production['Start-Date']);
+                const endDate = new Date(production['End-Date']);
+                const cameraDetails = getCameraDetails(production['Camera-ID']);
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDateRange(startDate, endDate)}</td>
+                    <td>${production['Production-Name']}</td>
+                    <td>${production['Location']}</td>
+                    <td>Camera ${production['Camera-ID']} (${cameraDetails['Arena'] || 'Main Arena'})</td>
+                    <td>${production['Event-Manager']}</td>
+                    <td>${production['Cockpit-User']}</td>
+                    <td>${production['Notes'] || '-'}</td>
+                    <td>
+                        <button class="edit-btn" onclick="openEditProductionModal('${production['Production-ID']}')">
+                            Edit
+                        </button>
+                    </td>
+                `;
+            });
+        }
+        
+        // Woche formatieren
+        function formatWeek(weekStart) {
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            const startStr = weekStart.toLocaleDateString('de-DE', { 
+                day: '2-digit', 
+                month: '2-digit' 
+            });
+            const endStr = weekEnd.toLocaleDateString('de-DE', { 
+                day: '2-digit', 
+                month: '2-digit' 
+            });
+            
+            return `${startStr} - ${endStr}`;
+        }
+        
+        // Datumsbereich formatieren
+        function formatDateRange(startDate, endDate) {
+            const start = startDate.toLocaleDateString('de-DE', { 
+                day: '2-digit', 
+                month: '2-digit' 
+            });
+            const end = endDate.toLocaleDateString('de-DE', { 
+                day: '2-digit', 
+                month: '2-digit' 
+            });
+            
+            const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            
+            return `${start} - ${end} (${duration} days)`;
+        }
+        
+        // Kamera-Select-Felder füllen
+        function populateCameraSelects() {
+            const cameraSelects = [
+                document.getElementById('cameraId'),
+                document.getElementById('editCameraId')
+            ];
+            
+            cameraSelects.forEach(select => {
+                // Vorhandene Optionen außer der ersten löschen
+                while (select.children.length > 1) {
+                    select.removeChild(select.lastChild);
+                }
+                
+                // Kamera-Optionen hinzufügen
+                camerasData.forEach(camera => {
+                    if (camera['ID'] && camera['Location']) {
+                        const option = document.createElement('option');
+                        option.value = camera['ID'];
+                        option.textContent = `Camera ${camera['ID']} - ${camera['Location']} (${camera['Arena'] || 'Main Arena'})`;
+                        select.appendChild(option);
+                    }
+                });
+            });
+        }
+        
+        // Modal für neue Produktion öffnen
+        function openAddProductionModal() {
+            // Formular zurücksetzen
+            document.getElementById('addProductionForm').reset();
+            
+            // Modal anzeigen
+            document.getElementById('addProductionModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Modal für neue Produktion schließen
+        function closeAddProductionModal() {
+            document.getElementById('addProductionModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Modal für Bearbeitung öffnen
+        function openEditProductionModal(productionId) {
+            currentEditingId = productionId;
+            
+            // Produktion finden
+            const production = productionsData.find(p => p['Production-ID'] === productionId);
+            if (!production) {
+                alert('Production not found!');
+                return;
+            }
+            
+            // Formular mit aktuellen Werten füllen
+            document.getElementById('editProductionId').value = productionId;
+            document.getElementById('editProductionName').value = production['Production-Name'];
+            document.getElementById('editCameraId').value = production['Camera-ID'];
+            document.getElementById('editStartDate').value = production['Start-Date'];
+            document.getElementById('editEndDate').value = production['End-Date'];
+            document.getElementById('editEventManager').value = production['Event-Manager'];
+            document.getElementById('editCockpitUser').value = production['Cockpit-User'];
+            document.getElementById('editStatus').value = production['Status'];
+            document.getElementById('editNotes').value = production['Notes'] || '';
+            
+            // Modal anzeigen
+            document.getElementById('editProductionModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Modal für Bearbeitung schließen
+        function closeEditProductionModal() {
+            document.getElementById('editProductionModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentEditingId = null;
+        }
+        
+        // Neue Produktion speichern
+        function saveNewProduction() {
+            // Formular-Daten sammeln
+            const form = document.getElementById('addProductionForm');
+            const formData = new FormData(form);
+            
+            // Validierung
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Neue Production-ID generieren
+            const maxId = Math.max(...productionsData.map(p => parseInt(p['Production-ID']) || 0));
+            const newId = (maxId + 1).toString();
+            
+            // Kamera-Details für Location abrufen
+            const selectedCamera = camerasData.find(c => c['ID'] === formData.get('cameraId'));
+            const location = selectedCamera ? selectedCamera['Location'] : 'Unknown';
+            
+            // Neue Produktion erstellen
+            const newProduction = {
+                'Production-ID': newId,
+                'Production-Name': formData.get('productionName'),
+                'Camera-ID': formData.get('cameraId'),
+                'Location': location,
+                'Start-Date': formData.get('startDate'),
+                'End-Date': formData.get('endDate'),
+                'Event-Manager': formData.get('eventManager'),
+                'Cockpit-User': formData.get('cockpitUser'),
+                'Status': formData.get('status'),
+                'Notes': formData.get('notes') || ''
+            };
+            
+            // Zu Daten hinzufügen
+            productionsData.push(newProduction);
+            
+            // Lokale Speicherung
+            saveToLocalStorage();
+            
+            // UI aktualisieren
+            calculateStatistics();
+            displayCurrentProductions();
+            displayCompletedProductions();
+            
+            // Modal schließen
+            closeAddProductionModal();
+            
+            alert('Production successfully added!');
+        }
+        
+        // Bearbeitete Produktion speichern
+        function saveEditedProduction() {
+            if (!currentEditingId) return;
+            
+            // Formular-Daten sammeln
+            const form = document.getElementById('editProductionForm');
+            const formData = new FormData(form);
+            
+            // Validierung
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Produktion finden und aktualisieren
+            const productionIndex = productionsData.findIndex(p => p['Production-ID'] === currentEditingId);
+            if (productionIndex === -1) {
+                alert('Production not found!');
+                return;
+            }
+            
+            // Kamera-Details für Location abrufen
+            const selectedCamera = camerasData.find(c => c['ID'] === formData.get('editCameraId'));
+            const location = selectedCamera ? selectedCamera['Location'] : productionsData[productionIndex]['Location'];
+            
+            // Produktion aktualisieren
+            productionsData[productionIndex] = {
+                'Production-ID': currentEditingId,
+                'Production-Name': formData.get('editProductionName'),
+                'Camera-ID': formData.get('editCameraId'),
+                'Location': location,
+                'Start-Date': formData.get('editStartDate'),
+                'End-Date': formData.get('editEndDate'),
+                'Event-Manager': formData.get('editEventManager'),
+                'Cockpit-User': formData.get('editCockpitUser'),
+                'Status': formData.get('editStatus'),
+                'Notes': formData.get('editNotes') || ''
+            };
+            
+            // Lokale Speicherung
+            saveToLocalStorage();
+            
+            // UI aktualisieren
+            calculateStatistics();
+            displayCurrentProductions();
+            displayCompletedProductions();
+            
+            // Modal schließen
+            closeEditProductionModal();
+            
+            alert('Production successfully updated!');
+        }
+        
+        // Produktion löschen
+        function deleteProduction() {
+            if (!currentEditingId) return;
+            
+            if (!confirm('Are you sure you want to delete this production? This action cannot be undone.')) {
+                return;
+            }
+            
+            // Produktion finden und entfernen
+            const productionIndex = productionsData.findIndex(p => p['Production-ID'] === currentEditingId);
+            if (productionIndex === -1) {
+                alert('Production not found!');
+                return;
+            }
+            
+            // Aus Daten entfernen
+            productionsData.splice(productionIndex, 1);
+            
+            // Lokale Speicherung
+            saveToLocalStorage();
+            
+            // UI aktualisieren
+            calculateStatistics();
+            displayCurrentProductions();
+            displayCompletedProductions();
+            
+            // Modal schließen
+            closeEditProductionModal();
+            
+            alert('Production successfully deleted!');
+        }
+        
+        // Daten im localStorage speichern
+        function saveToLocalStorage() {
+            localStorage.setItem('productionsData', JSON.stringify(productionsData));
+        }
+        
+        // CSV für Download erstellen
+        function downloadUpdatedCSV() {
+            const headers = [
+                'Production-ID', 'Production-Name', 'Camera-ID', 'Location', 
+                'Start-Date', 'End-Date', 'Event-Manager', 'Cockpit-User', 
+                'Status', 'Notes'
+            ];
+            
+            let csvContent = headers.join(',') + '\n';
+            
+            productionsData.forEach(production => {
+                const row = headers.map(header => {
+                    const value = production[header] || '';
+                    // Anführungszeichen hinzufügen wenn Kommas enthalten sind
+                    return value.includes(',') ? `"${value}"` : value;
+                });
+                csvContent += row.join(',') + '\n';
+            });
+            
+            // Download-Link erstellen
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'updated_productions.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Modal schließen beim Klick außerhalb
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addProductionModal');
+            const editModal = document.getElementById('editProductionModal');
+            
+            if (event.target === addModal) {
+                closeAddProductionModal();
+            }
+            if (event.target === editModal) {
+                closeEditProductionModal();
+            }
+        }
+        
+        // Daten beim Laden der Seite laden
+        document.addEventListener('DOMContentLoaded', loadProductionsData);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Camera Management - Equipment</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <!-- HLS.js for video streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12/dist/hls.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>AI Camera Management</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span>!</span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+        
+        <nav class="dashboard-nav">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="productions.html" class="nav-link">Productions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="equipment.html" class="nav-link active">Equipment</a>
+                </li>
+                <li class="nav-item">
+                    <a href="installations.html" class="nav-link">Installations</a>
+                </li>
+                <li class="nav-item">
+                    <a href="finance.html" class="nav-link">Finance</a>
+                </li>
+            </ul>
+        </nav>
+        
+        <main class="dashboard-content">
+            <h2>Equipment</h2>
+            
+            <!-- Aktive Kameras -->
+            <div class="equipment-section active-section">
+                <h3>Active Cameras</h3>
+                <div class="equipment-table-container">
+                    <table class="equipment-table active" id="activeCamerasTable">
+                        <thead>
+                            <tr>
+                                <th>Live Stream</th>
+                                <th>Camera ID</th>
+                                <th>Location</th>
+                                <th>Arena</th>
+                                <th>IP Address</th>
+                                <th>Installation Date</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activeCamerasBody">
+                            <!-- Dynamisch geladen -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Zu installierende Kameras -->
+            <div class="equipment-section pending-section">
+                <h3>Cameras to Install</h3>
+                <div class="equipment-table-container">
+                    <table class="equipment-table pending" id="pendingCamerasTable">
+                        <thead>
+                            <tr>
+                                <th>Camera ID</th>
+                                <th>Location</th>
+                                <th>Arena</th>
+                                <th>Installation Type</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingCamerasBody">
+                            <!-- Dynamisch geladen -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Inaktive Kameras -->
+            <div class="equipment-section inactive-section">
+                <h3>Inactive Cameras</h3>
+                <div class="equipment-table-container">
+                    <table class="equipment-table inactive" id="inactiveCamerasTable">
+                        <thead>
+                            <tr>
+                                <th>Camera ID</th>
+                                <th>Location</th>
+                                <th>Arena</th>
+                                <th>IP Address</th>
+                                <th>Uninstallation Date</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inactiveCamerasBody">
+                            <!-- Dynamisch geladen -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modal für Kamera-Details -->
+    <div id="cameraDetailsModal" class="modal">
+        <div class="modal-content camera-details-modal">
+            <div class="modal-header">
+                <h3 id="cameraDetailsTitle">Camera Details</h3>
+                <span class="modal-close" onclick="closeCameraDetailsModal()">&times;</span>
+            </div>
+            <div class="modal-body camera-details-body">
+                <!-- Zwei-spalten Layout: Links Details, Rechts Bilder -->
+                <div class="details-container">
+                    <div class="details-left">
+                        <h4>Technical Information</h4>
+                        <div id="cameraDetailsContent" class="details-grid">
+                            <!-- Dynamisch geladen -->
+                        </div>
+                    </div>
+                    <div class="details-right">
+                        <h4>Camera Images</h4>
+                        <div id="cameraImageGallery" class="image-gallery">
+                            <!-- Dynamisch geladen -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeCameraDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check if user is logged in
+        const currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('userName').textContent = JSON.parse(currentUser).fullName;
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+        
+        // Globale Variablen
+        let camerasData = [];
+        let hlsPlayers = {};
+        
+        // CSV-Daten laden und Equipment anzeigen
+        async function loadEquipmentData() {
+            try {
+                const response = await fetch('ai_cameras.csv');
+                const csvText = await response.text();
+                
+                // CSV parsen
+                camerasData = parseCSV(csvText);
+                
+                // Equipment-Tabellen anzeigen
+                displayActiveCameras();
+                displayPendingCameras();
+                displayInactiveCameras();
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Equipment-Daten:', error);
+            }
+        }
+        
+        // CSV-Parser Funktion
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line) {
+                    const values = parseCSVLine(line);
+                    if (values.length === headers.length) {
+                        const row = {};
+                        headers.forEach((header, index) => {
+                            row[header] = values[index];
+                        });
+                        data.push(row);
+                    }
+                }
+            }
+            return data;
+        }
+        
+        // CSV-Zeile parsen (berücksichtigt Anführungszeichen)
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+        
+        // Aktive Kameras anzeigen
+        function displayActiveCameras() {
+            const tbody = document.getElementById('activeCamerasBody');
+            tbody.innerHTML = '';
+            
+            const activeCameras = camerasData.filter(camera => camera['Status'] === 'Active');
+            
+            activeCameras.forEach((camera, index) => {
+                const serverId = camera['Server-ID'];
+                const hasStream = serverId && serverId.trim() !== '';
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td class="stream-cell">
+                        ${hasStream ? 
+                            `<div class="video-container">
+                                <video id="video-${camera['ID']}" class="live-video" controls muted autoplay>
+                                    <p>Live stream not available</p>
+                                </video>
+                                <div class="stream-info">
+                                    <span class="stream-status loading">Loading...</span>
+                                </div>
+                            </div>` : 
+                            `<div class="standby-container">
+                                <div class="standby-screen">
+                                    <div class="standby-bars">
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                    </div>
+                                    <div class="standby-text">STANDBY</div>
+                                </div>
+                            </div>`
+                        }
+                    </td>
+                    <td><strong>${camera['Camera-ID']}</strong></td>
+                    <td>${camera['Location'] || '-'}</td>
+                    <td>${camera['Arena'] || '-'}</td>
+                    <td>${camera['IP Address'] || '-'}</td>
+                    <td>${camera['Installation Date'] || '-'}</td>
+                    <td><span class="status-badge active">Active</span></td>
+                    <td>
+                        <button class="details-btn" onclick="openCameraDetailsModal('${camera['Camera-ID']}')">
+                            <i class="info-icon">ℹ</i> Details
+                        </button>
+                    </td>
+                `;
+                
+                // Live-Stream laden falls verfügbar
+                if (hasStream) {
+                    setTimeout(() => initHLSStream(camera['ID'], serverId), 100 * index);
+                }
+            });
+        }
+        
+        // Zu installierende Kameras anzeigen
+        function displayPendingCameras() {
+            const tbody = document.getElementById('pendingCamerasBody');
+            tbody.innerHTML = '';
+            
+            const pendingCameras = camerasData.filter(camera => 
+                camera['Status'] === '' || camera['Status'] === 'pending' || 
+                (camera['Camera-ID'] && !camera['Status'])
+            );
+            
+            pendingCameras.forEach(camera => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${camera['Camera-ID'] || '-'}</strong></td>
+                    <td>${camera['Location'] || '-'}</td>
+                    <td>${camera['Arena'] || '-'}</td>
+                    <td>${camera['Installation Type'] || '-'}</td>
+                    <td>${camera['Address'] || '-'}</td>
+                    <td><span class="status-badge pending">Pending Installation</span></td>
+                    <td>
+                        <button class="details-btn" onclick="openCameraDetailsModal('${camera['Camera-ID']}')">
+                            <i class="info-icon">ℹ</i> Details
+                        </button>
+                    </td>
+                `;
+            });
+        }
+        
+        // Inaktive Kameras anzeigen
+        function displayInactiveCameras() {
+            const tbody = document.getElementById('inactiveCamerasBody');
+            tbody.innerHTML = '';
+            
+            const inactiveCameras = camerasData.filter(camera => camera['Status'] === 'Storage');
+            
+            inactiveCameras.forEach(camera => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${camera['Camera-ID'] || '-'}</strong></td>
+                    <td>${camera['Location'] || '-'}</td>
+                    <td>${camera['Arena'] || '-'}</td>
+                    <td>${camera['IP Address'] || '-'}</td>
+                    <td>${camera['Uninstallation Date'] || '-'}</td>
+                    <td><span class="status-badge inactive">Inactive</span></td>
+                    <td>
+                        <button class="details-btn" onclick="openCameraDetailsModal('${camera['Camera-ID']}')">
+                            <i class="info-icon">ℹ</i> Details
+                        </button>
+                    </td>
+                `;
+            });
+        }
+        
+        // HLS-Stream initialisieren
+        function initHLSStream(cameraId, serverId) {
+            const video = document.getElementById(`video-${cameraId}`);
+            const statusElement = video.parentElement.querySelector('.stream-status');
+            
+            if (!video || !serverId) {
+                if (statusElement) statusElement.textContent = 'No stream available';
+                return;
+            }
+            
+            const streamUrl = `https://ingest-${serverId}.clipmyhorse.tv:9443/ingest/outstream_low/playlist.m3u8`;
+            
+            console.log(`Loading HLS stream for Camera ${cameraId}: ${streamUrl}`);
+            
+            if (Hls.isSupported()) {
+                const hls = new Hls({
+                    enableWorker: false,
+                    lowLatencyMode: true,
+                    backBufferLength: 90
+                });
+                
+                hls.loadSource(streamUrl);
+                hls.attachMedia(video);
+                
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    console.log(`HLS manifest loaded for Camera ${cameraId}`);
+                    if (statusElement) {
+                        statusElement.textContent = 'Live';
+                        statusElement.className = 'stream-status live';
+                    }
+                    video.play().catch(e => {
+                        console.log(`Autoplay prevented for Camera ${cameraId}:`, e);
+                    });
+                });
+                
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    console.error(`HLS error for Camera ${cameraId}:`, data);
+                    if (statusElement) {
+                        statusElement.textContent = 'Stream unavailable';
+                        statusElement.className = 'stream-status error';
+                    }
+                    
+                    if (data.fatal) {
+                        switch(data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.log(`Network error for Camera ${cameraId}, trying to recover...`);
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.log(`Media error for Camera ${cameraId}, trying to recover...`);
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                console.log(`Fatal error for Camera ${cameraId}, destroying HLS instance`);
+                                hls.destroy();
+                                break;
+                        }
+                    }
+                });
+                
+                // HLS-Instanz speichern für spätere Verwendung
+                hlsPlayers[cameraId] = hls;
+                
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Fallback für Safari
+                video.src = streamUrl;
+                video.addEventListener('loadedmetadata', function() {
+                    if (statusElement) {
+                        statusElement.textContent = 'Live';
+                        statusElement.className = 'stream-status live';
+                    }
+                    video.play().catch(e => {
+                        console.log(`Autoplay prevented for Camera ${cameraId}:`, e);
+                    });
+                });
+                
+                video.addEventListener('error', function() {
+                    console.error(`Video error for Camera ${cameraId}`);
+                    if (statusElement) {
+                        statusElement.textContent = 'Stream unavailable';
+                        statusElement.className = 'stream-status error';
+                    }
+                });
+            } else {
+                console.error(`HLS not supported for Camera ${cameraId}`);
+                if (statusElement) {
+                    statusElement.textContent = 'HLS not supported';
+                    statusElement.className = 'stream-status error';
+                }
+            }
+        }
+        
+        // Cleanup beim Verlassen der Seite
+        window.addEventListener('beforeunload', function() {
+            Object.values(hlsPlayers).forEach(hls => {
+                if (hls) hls.destroy();
+            });
+        });
+        
+        // Kamera-Details Modal öffnen
+        async function openCameraDetailsModal(cameraId) {
+            try {
+                // Modal anzeigen
+                document.getElementById('cameraDetailsModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                
+                // Titel setzen
+                document.getElementById('cameraDetailsTitle').textContent = `Camera ${cameraId} - Details`;
+                
+                // Loading-Anzeige
+                document.getElementById('cameraDetailsContent').innerHTML = '<p>Loading camera details...</p>';
+                document.getElementById('cameraImageGallery').innerHTML = '<p>Loading images...</p>';
+                
+                // Kamera-Details laden
+                await loadCameraDetails(cameraId);
+                
+                // Bilder laden
+                await loadCameraImages(cameraId);
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Kamera-Details:', error);
+                document.getElementById('cameraDetailsContent').innerHTML = '<p class="error">Error loading camera details</p>';
+                document.getElementById('cameraImageGallery').innerHTML = '<p class="error">Error loading images</p>';
+            }
+        }
+        
+        // Kamera-Details Modal schließen
+        function closeCameraDetailsModal() {
+            document.getElementById('cameraDetailsModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Kamera-Details aus CSV laden
+        async function loadCameraDetails(cameraId) {
+            try {
+                const response = await fetch(`camera_details_${cameraId}.csv`);
+                if (!response.ok) {
+                    throw new Error(`Details for camera ${cameraId} not found`);
+                }
+                
+                const csvText = await response.text();
+                const details = parseCSV(csvText);
+                
+                displayCameraDetails(details);
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Details:', error);
+                document.getElementById('cameraDetailsContent').innerHTML = 
+                    `<p class="error">Details for Camera ${cameraId} not available</p>`;
+            }
+        }
+        
+        // Kamera-Details anzeigen
+        function displayCameraDetails(details) {
+            const container = document.getElementById('cameraDetailsContent');
+            let html = '';
+            
+            details.forEach(detail => {
+                const field = detail['Field'];
+                const value = detail['Value'];
+                
+                if (field && value) {
+                    // Spezielle Formatierung für bestimmte Felder
+                    let displayValue = value;
+                    let displayField = field.replace(/-/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                    
+                    // Links für URLs
+                    if (field.includes('Link') || field.includes('Address') && value.includes('.')) {
+                        displayValue = `<a href="http://${value}" target="_blank" class="detail-link">${value}</a>`;
+                    }
+                    
+                    // Highlight für wichtige Felder
+                    const isImportant = ['PIN', 'PUK', 'SIM-Number', 'Audio-Mixer-Link'].includes(field);
+                    const fieldClass = isImportant ? 'detail-field important' : 'detail-field';
+                    
+                    html += `
+                        <div class="detail-item">
+                            <div class="${fieldClass}">${displayField}:</div>
+                            <div class="detail-value">${displayValue}</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            container.innerHTML = html || '<p>No details available</p>';
+        }
+        
+        // Kamera-Bilder laden
+        async function loadCameraImages(cameraId) {
+            try {
+                // Versuche Bilder von 1-10 zu laden
+                const imageContainer = document.getElementById('cameraImageGallery');
+                let imagesHtml = '';
+                let foundImages = 0;
+                
+                for (let i = 1; i <= 10; i++) {
+                    const imagePath = `camera_images/${cameraId}/${cameraId}_${i.toString().padStart(2, '0')}.jpg`;
+                    
+                    try {
+                        const response = await fetch(imagePath, { method: 'HEAD' });
+                        if (response.ok) {
+                            foundImages++;
+                            imagesHtml += `
+                                <div class="image-item">
+                                    <img src="${imagePath}" alt="Camera ${cameraId} Image ${i}" 
+                                         onclick="openImageFullscreen('${imagePath}')" 
+                                         onerror="this.parentElement.style.display='none'">
+                                    <div class="image-caption">Image ${i}</div>
+                                </div>
+                            `;
+                        }
+                    } catch (error) {
+                        // Bild nicht gefunden, weiter
+                    }
+                }
+                
+                if (foundImages === 0) {
+                    // Alternative: Versuche andere Formate
+                    const alternativeFormats = ['png', 'jpeg', 'gif'];
+                    for (const format of alternativeFormats) {
+                        const imagePath = `camera_images/${cameraId}/${cameraId}_01.${format}`;
+                        try {
+                            const response = await fetch(imagePath, { method: 'HEAD' });
+                            if (response.ok) {
+                                imagesHtml += `
+                                    <div class="image-item">
+                                        <img src="${imagePath}" alt="Camera ${cameraId} Image" 
+                                             onclick="openImageFullscreen('${imagePath}')"
+                                             onerror="this.parentElement.style.display='none'">
+                                        <div class="image-caption">Camera Image</div>
+                                    </div>
+                                `;
+                                foundImages++;
+                                break;
+                            }
+                        } catch (error) {
+                            // Format nicht gefunden
+                        }
+                    }
+                }
+                
+                imageContainer.innerHTML = foundImages > 0 ? imagesHtml : 
+                    `<p class="no-images">No images available for Camera ${cameraId}</p>`;
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Bilder:', error);
+                document.getElementById('cameraImageGallery').innerHTML = 
+                    `<p class="error">Error loading images for Camera ${cameraId}</p>`;
+            }
+        }
+        
+        // Bild im Vollbild öffnen
+        function openImageFullscreen(imagePath) {
+            const fullscreenDiv = document.createElement('div');
+            fullscreenDiv.className = 'image-fullscreen';
+            fullscreenDiv.innerHTML = `
+                <div class="fullscreen-content">
+                    <img src="${imagePath}" alt="Fullscreen Image">
+                    <span class="fullscreen-close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                </div>
+            `;
+            
+            fullscreenDiv.onclick = function(e) {
+                if (e.target === fullscreenDiv) {
+                    fullscreenDiv.remove();
+                }
+            };
+            
+            document.body.appendChild(fullscreenDiv);
+        }
+        
+        // Modal schließen beim Klick außerhalb (erweitert)
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addProductionModal');
+            const editModal = document.getElementById('editProductionModal');
+            const detailsModal = document.getElementById('cameraDetailsModal');
+            
+            if (event.target === addModal) {
+                closeAddProductionModal();
+            }
+            if (event.target === editModal) {
+                closeEditProductionModal();
+            }
+            if (event.target === detailsModal) {
+                closeCameraDetailsModal();
+            }
+        }
+        
+        // Equipment-Daten beim Laden der Seite laden
+        document.addEventListener('DOMContentLoaded', loadEquipmentData);
+    </script>
+</body>
+</html> 

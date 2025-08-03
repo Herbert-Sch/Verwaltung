@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Camera Management - Installations</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>AI Camera Management</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span>!</span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+        
+        <nav class="dashboard-nav">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="productions.html" class="nav-link">Productions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="equipment.html" class="nav-link">Equipment</a>
+                </li>
+                <li class="nav-item">
+                    <a href="installations.html" class="nav-link active">Installations</a>
+                </li>
+                <li class="nav-item">
+                    <a href="finance.html" class="nav-link">Finance</a>
+                </li>
+            </ul>
+        </nav>
+        
+        <main class="dashboard-content">
+            <h2>Installations</h2>
+            <p>Installations content will be added here...</p>
+        </main>
+    </div>
+    
+    <script>
+        // Check if user is logged in
+        const currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('userName').textContent = JSON.parse(currentUser).fullName;
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html> 
