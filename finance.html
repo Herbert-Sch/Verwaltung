@@ -132,6 +132,33 @@
                 </div>
             </div>
             
+            <!-- Kamera Wirtschaftlichkeitsanalyse -->
+            <div class="camera-economics">
+                <h3>📊 Kamera Wirtschaftlichkeitsanalyse</h3>
+                <div class="economics-header">
+                    <p>Sortiert nach Wirtschaftlichkeit - Kosten pro Kamera über 3 Jahre Nutzungsdauer</p>
+                    <div class="filter-controls">
+                        <label for="sortOrder">Sortierung:</label>
+                        <select id="sortOrder" onchange="displayCameraEconomics()">
+                            <option value="efficiency">Wirtschaftlichkeit (beste zuerst)</option>
+                            <option value="usage">Nutzungshäufigkeit (höchste zuerst)</option>
+                            <option value="costs">Kosten pro Tag (niedrigste zuerst)</option>
+                            <option value="alphabet">Alphabetisch (A-Z)</option>
+                        </select>
+                        <label for="yearFilter">Jahr:</label>
+                        <select id="yearFilter" onchange="displayCameraEconomics()">
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="all">Alle Jahre</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="camera-grid" id="cameraGrid">
+                    <!-- Dynamisch geladen -->
+                </div>
+            </div>
+
             <!-- Kostenrechner -->
             <div class="cost-calculator">
                 <h3>🧮 Kostenrechner</h3>
@@ -166,6 +193,7 @@
         // Finance Data
         let financeData = {};
         let camerasData = [];
+        let productionsData = [];
         
         // Load Finance Data
         async function loadFinanceData() {
@@ -179,12 +207,18 @@
                 const camerasJSON = await camerasResponse.json();
                 camerasData = camerasJSON.cameras;
                 
+                // Lade Produktions-Daten für Nutzungsanalyse
+                const productionsResponse = await fetch('productions.json');
+                const productionsJSON = await productionsResponse.json();
+                productionsData = productionsJSON.productions;
+                
                 console.log('📊 Finance: Data loaded successfully');
                 
                 displayFinanceOverview();
                 displayCostTables();
                 updateSystemStats();
                 calculateCosts();
+                displayCameraEconomics();
                 
             } catch (error) {
                 console.error('❌ Finance: Error loading data:', error);
@@ -430,6 +464,209 @@
                     </div>
                 </div>
             `;
+        }
+        
+        // Camera Economics Analysis
+        function displayCameraEconomics() {
+            const sortOrder = document.getElementById('sortOrder')?.value || 'efficiency';
+            const yearFilter = document.getElementById('yearFilter')?.value || '2025';
+            
+            // Analysiere Kamera-Nutzung aus Produktionen
+            const cameraUsage = analyzeCameraUsage(yearFilter);
+            
+            // Berechne Wirtschaftlichkeit für jede Kamera
+            const cameraEconomics = calculateCameraEconomics(cameraUsage);
+            
+            // Sortiere nach gewähltem Kriterium
+            const sortedCameras = sortCamerasByEfficiency(cameraEconomics, sortOrder);
+            
+            // Display Grid
+            displayCameraGrid(sortedCameras);
+        }
+        
+        // Analyze Camera Usage from Productions
+        function analyzeCameraUsage(yearFilter) {
+            const cameraUsage = {};
+            
+            // Initialize alle Kameras mit 0 Nutzung
+            camerasData.forEach(camera => {
+                cameraUsage[camera.cameraId] = {
+                    camera: camera,
+                    usageCount: 0,
+                    totalDays: 0,
+                    productions: []
+                };
+            });
+            
+            // Zähle Nutzung aus Produktionen
+            productionsData.forEach(production => {
+                const startDate = new Date(production.startDate);
+                const endDate = new Date(production.endDate);
+                const year = startDate.getFullYear();
+                
+                // Filter nach Jahr
+                if (yearFilter !== 'all' && year.toString() !== yearFilter) {
+                    return;
+                }
+                
+                // Berechne Anzahl Tage
+                const durationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                
+                // Für jede Kamera in der Produktion
+                production.cameraIds.forEach(cameraId => {
+                    if (cameraUsage[cameraId]) {
+                        cameraUsage[cameraId].usageCount++;
+                        cameraUsage[cameraId].totalDays += durationDays;
+                        cameraUsage[cameraId].productions.push({
+                            name: production.productionName,
+                            duration: durationDays,
+                            dates: `${production.startDate} - ${production.endDate}`
+                        });
+                    }
+                });
+            });
+            
+            return cameraUsage;
+        }
+        
+        // Calculate Camera Economics
+        function calculateCameraEconomics(cameraUsage) {
+            const economics = [];
+            
+            // Basis-Kosten pro Kamera (3 Jahre)
+            const initialCost = financeData.calculations.totalSystemCost.initial.totalGrossEUR;
+            const monthlyCost = financeData.calculations.totalSystemCost.monthlyPerSystem.totalGrossEUR;
+            const threeYearCost = initialCost + (monthlyCost * 36); // 3 Jahre * 12 Monate
+            
+            Object.values(cameraUsage).forEach(usage => {
+                const camera = usage.camera;
+                
+                // Berechne Kosten pro Tag über 3 Jahre
+                const costPerDay3Years = threeYearCost / (365 * 3); // €/Tag über 3 Jahre
+                
+                // Berechne Effizienz
+                let efficiency = 0;
+                let costPerUsageDay = 0;
+                
+                if (usage.totalDays > 0) {
+                    costPerUsageDay = threeYearCost / usage.totalDays;
+                    efficiency = usage.totalDays / (365 * 3); // Nutzungsgrad über 3 Jahre
+                } else {
+                    costPerUsageDay = threeYearCost; // Keine Nutzung = volle Kosten
+                    efficiency = 0;
+                }
+                
+                economics.push({
+                    ...usage,
+                    threeYearCost: threeYearCost,
+                    costPerDay3Years: costPerDay3Years,
+                    costPerUsageDay: costPerUsageDay,
+                    efficiency: efficiency,
+                    utilizationRate: usage.totalDays > 0 ? (usage.totalDays / (365 * 3) * 100) : 0
+                });
+            });
+            
+            return economics;
+        }
+        
+        // Sort Cameras by Efficiency
+        function sortCamerasByEfficiency(economics, sortOrder) {
+            switch (sortOrder) {
+                case 'efficiency':
+                    return economics.sort((a, b) => b.efficiency - a.efficiency);
+                case 'usage':
+                    return economics.sort((a, b) => b.usageCount - a.usageCount);
+                case 'costs':
+                    return economics.sort((a, b) => a.costPerUsageDay - b.costPerUsageDay);
+                case 'alphabet':
+                    return economics.sort((a, b) => a.camera.cameraId.localeCompare(b.camera.cameraId));
+                default:
+                    return economics.sort((a, b) => b.efficiency - a.efficiency);
+            }
+        }
+        
+        // Display Camera Grid
+        function displayCameraGrid(sortedCameras) {
+            const grid = document.getElementById('cameraGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            sortedCameras.forEach((camEcon, index) => {
+                const camera = camEcon.camera;
+                
+                // Effizienz-Klasse bestimmen
+                let efficiencyClass = 'low';
+                if (camEcon.efficiency > 0.3) efficiencyClass = 'high';
+                else if (camEcon.efficiency > 0.1) efficiencyClass = 'medium';
+                
+                // Status-Klasse
+                let statusClass = camera.status.toLowerCase();
+                if (statusClass === 'installation') statusClass = 'pending';
+                
+                const cameraCard = document.createElement('div');
+                cameraCard.className = `camera-card efficiency-${efficiencyClass} status-${statusClass}`;
+                
+                cameraCard.innerHTML = `
+                    <div class="camera-header">
+                        <div class="camera-id">${camera.cameraId}</div>
+                        <div class="camera-rank">#${index + 1}</div>
+                    </div>
+                    
+                    <div class="camera-info">
+                        <h4>${camera.location}</h4>
+                        <p class="arena">${camera.arena}</p>
+                        <div class="status-badge ${statusClass}">${camera.status}</div>
+                    </div>
+                    
+                    <div class="economics-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Nutzung 2025:</span>
+                            <span class="stat-value">${camEcon.usageCount} Produktionen</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Nutzungstage:</span>
+                            <span class="stat-value">${camEcon.totalDays} Tage</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Auslastung (3J):</span>
+                            <span class="stat-value">${camEcon.utilizationRate.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-breakdown-card">
+                        <div class="cost-row">
+                            <span class="cost-label">Gesamtkosten (3J):</span>
+                            <span class="cost-value">${formatCurrency(camEcon.threeYearCost, 0)}</span>
+                        </div>
+                        <div class="cost-row">
+                            <span class="cost-label">Kosten pro Tag (3J):</span>
+                            <span class="cost-value">${formatCurrency(camEcon.costPerDay3Years)}</span>
+                        </div>
+                        <div class="cost-row highlight">
+                            <span class="cost-label">Kosten pro Nutzungstag:</span>
+                            <span class="cost-value">${formatCurrency(camEcon.costPerUsageDay, 0)}</span>
+                        </div>
+                    </div>
+                    
+                    ${camEcon.productions.length > 0 ? `
+                        <div class="productions-list">
+                            <strong>Produktionen:</strong>
+                            ${camEcon.productions.slice(0, 3).map(prod => 
+                                `<div class="production-item">${prod.name} (${prod.duration}d)</div>`
+                            ).join('')}
+                            ${camEcon.productions.length > 3 ? 
+                                `<div class="production-more">+${camEcon.productions.length - 3} weitere</div>` : ''}
+                        </div>
+                    ` : `
+                        <div class="no-productions">
+                            <em>Keine Produktionen geplant</em>
+                        </div>
+                    `}
+                `;
+                
+                grid.appendChild(cameraCard);
+            });
         }
         
         // Initialize when page loads
