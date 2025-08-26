@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Camera Management - Location Analysis</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>AI Camera Management</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span>!</span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="productions.html" class="nav-link">Productions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="equipment.html" class="nav-link">Equipment</a>
+                </li>
+                <li class="nav-item">
+                    <a href="installations.html" class="nav-link">Installations</a>
+                </li>
+                <li class="nav-item">
+                    <a href="finance.html" class="nav-link">Finance</a>
+                </li>
+                <li class="nav-item">
+                    <a href="analysis.html" class="nav-link active">Location Analysis</a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <h2>Camera Location Analysis</h2>
+
+            <!-- Kosten-Parameter Übersicht -->
+            <div class="cost-overview">
+                <div class="cost-parameters">
+                    <h3>Cost Parameters</h3>
+                    <div class="cost-grid">
+                        <div class="cost-item">
+                            <h4>Camera Operator</h4>
+                            <div class="cost-breakdown">
+                                <span>Europe: €400/day</span>
+                                <span>USA: €250/day</span>
+                            </div>
+                        </div>
+                        <div class="cost-item">
+                            <h4>K2 Camera System</h4>
+                            <div class="cost-breakdown">
+                                <span>Camera: €3,600</span>
+                                <span>Base Box: €2,500</span>
+                                <span><strong>Total: €6,100</strong></span>
+                                <span class="small-text">4-year lifetime</span>
+                            </div>
+                        </div>
+                        <div class="cost-item">
+                            <h4>N6 Camera System</h4>
+                            <div class="cost-breakdown">
+                                <span>Camera: €13,000</span>
+                                <span>Server: €2,500</span>
+                                <span><strong>Total: €15,500</strong></span>
+                                <span class="small-text">4-year lifetime</span>
+                            </div>
+                        </div>
+                        <div class="cost-item">
+                            <h4>N8 Camera System</h4>
+                            <div class="cost-breakdown">
+                                <span>Camera: €22,000</span>
+                                <span>Server: €2,500</span>
+                                <span><strong>Total: €24,500</strong></span>
+                                <span class="small-text">4-year lifetime</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter und Steuerung -->
+            <div class="analysis-controls">
+                <div class="control-group">
+                    <label for="regionFilter">Region:</label>
+                    <select id="regionFilter" onchange="applyFilters()">
+                        <option value="all">All Regions</option>
+                        <option value="europe">Europe</option>
+                        <option value="usa">USA</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="minEvents">Min Events:</label>
+                    <input type="number" id="minEvents" value="1" min="1" onchange="applyFilters()">
+                </div>
+                <div class="control-group">
+                    <label for="sortBy">Sort by:</label>
+                    <select id="sortBy" onchange="applyFilters()">
+                        <option value="events">Total Events</option>
+                        <option value="days">Production Days</option>
+                        <option value="saving">Potential Savings</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Lade-Indikator -->
+            <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                <p>Analyzing event data...</p>
+            </div>
+
+            <!-- Analyse-Ergebnisse -->
+            <div id="analysisResults" class="analysis-results" style="display: none;">
+                <div class="analysis-summary">
+                    <h3>Analysis Summary</h3>
+                    <div class="summary-stats">
+                        <div class="summary-item">
+                            <span class="summary-label">Total Locations:</span>
+                            <span class="summary-value" id="totalLocations">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Events:</span>
+                            <span class="summary-value" id="totalEvents">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Production Days:</span>
+                            <span class="summary-value" id="totalDays">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Potential Annual Savings:</span>
+                            <span class="summary-value" id="potentialSavings">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analysis-table-container">
+                    <table class="analysis-table" id="locationAnalysisTable">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Country</th>
+                                <th>Events</th>
+                                <th>Production Days</th>
+                                <th>Operator Cost</th>
+                                <th>Recommended System</th>
+                                <th>Annual Savings</th>
+                                <th>ROI Period</th>
+                                <th>Recommendation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="locationAnalysisBody">
+                            <!-- Dynamisch geladen -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Detaillierte Empfehlungen -->
+            <div id="detailedRecommendations" class="detailed-recommendations" style="display: none;">
+                <h3>Detailed Recommendations</h3>
+                <div class="recommendation-tabs">
+                    <button class="tab-btn active" onclick="showRecommendationTab('high')">High Priority</button>
+                    <button class="tab-btn" onclick="showRecommendationTab('medium')">Medium Priority</button>
+                    <button class="tab-btn" onclick="showRecommendationTab('low')">Low Priority</button>
+                </div>
+
+                <div id="recommendationsContent" class="recommendations-content">
+                    <!-- Dynamisch geladen -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('userName').textContent = JSON.parse(currentUser).fullName;
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Globale Variablen
+        let eventsData = [];
+        let analysisResults = [];
+
+        // Kosten-Konstanten
+        const COSTS = {
+            operator: {
+                europe: 400, // € pro Tag
+                usa: 250      // € pro Tag
+            },
+            systems: {
+                k2: 6100,     // € Gesamtsystem (4 Jahre)
+                n6: 15500,    // € Gesamtsystem (4 Jahre)
+                n8: 24500     // € Gesamtsystem (4 Jahre)
+            }
+        };
+
+        // Event-Daten laden und analysieren
+        async function loadAndAnalyzeEvents() {
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('analysisResults').style.display = 'none';
+                document.getElementById('detailedRecommendations').style.display = 'none';
+
+                console.log('📊 Loading events data for analysis...');
+
+                // Events JSON laden
+                const response = await fetch('events.json');
+                const data = await response.json();
+                eventsData = data.events || [];
+
+                console.log(`📊 Loaded ${eventsData.length} events for analysis`);
+
+                // Daten analysieren
+                await analyzeLocations();
+
+            } catch (error) {
+                console.error('Fehler beim Laden der Event-Daten:', error);
+                document.getElementById('loadingIndicator').innerHTML = '<p class="error">Error loading event data</p>';
+            }
+        }
+
+        // Standort-Analyse durchführen
+        async function analyzeLocations() {
+            console.log('🔍 Analyzing locations...');
+
+            // Events nach Standort gruppieren
+            const locationGroups = {};
+
+            eventsData.forEach(event => {
+                const location = event.location || 'Unknown';
+                const country = event.country || 'Unknown';
+
+                if (!locationGroups[location]) {
+                    locationGroups[location] = {
+                        location: location,
+                        country: country,
+                        events: [],
+                        totalDays: 0,
+                        region: getRegion(country)
+                    };
+                }
+
+                locationGroups[location].events.push(event);
+
+                // Produktionstage berechnen
+                const days = calculateEventDays(event.start_date, event.end_date);
+                locationGroups[location].totalDays += days;
+            });
+
+            console.log(`🔍 Found ${Object.keys(locationGroups).length} unique locations`);
+
+            // Kostenanalyse für jeden Standort
+            analysisResults = Object.values(locationGroups).map(location => {
+                return analyzeLocationCosts(location);
+            });
+
+            // Nach Events sortieren (Standard)
+            analysisResults.sort((a, b) => b.events - a.events);
+
+            // Ergebnisse anzeigen
+            displayAnalysisResults();
+            displayDetailedRecommendations();
+
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('analysisResults').style.display = 'block';
+            document.getElementById('detailedRecommendations').style.display = 'block';
+        }
+
+        // Region basierend auf Land bestimmen
+        function getRegion(country) {
+            const europeCountries = ['DE', 'FR', 'GB', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH', 'SE', 'NO', 'DK', 'FI', 'PL', 'CZ', 'HU', 'SK', 'SI', 'HR', 'BG', 'RO', 'EE', 'LV', 'LT'];
+            const usaCountries = ['US', 'USA'];
+
+            if (europeCountries.includes(country)) return 'europe';
+            if (usaCountries.includes(country)) return 'usa';
+            return 'other';
+        }
+
+        // Event-Tage berechnen
+        function calculateEventDays(startDate, endDate) {
+            try {
+                // Deutsche Datumsformate parsen (DD.MM.YYYY)
+                const start = parseGermanDate(startDate);
+                const end = parseGermanDate(endDate);
+
+                if (!start || !end) return 1; // Fallback
+
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 für inklusiven Endtag
+
+                return Math.max(1, diffDays); // Mindestens 1 Tag
+            } catch (error) {
+                console.warn(`Fehler beim Parsen der Daten: ${startDate} - ${endDate}`, error);
+                return 1;
+            }
+        }
+
+        // Deutsche Datumsformate parsen
+        function parseGermanDate(dateString) {
+            if (!dateString) return null;
+
+            // Format: DD.MM.YYYY
+            const parts = dateString.split('.');
+            if (parts.length === 3) {
+                const day = parseInt(parts[0]);
+                const month = parseInt(parts[1]) - 1; // JS Monate sind 0-basiert
+                const year = parseInt(parts[2]);
+                return new Date(year, month, day);
+            }
+
+            // Fallback: Versuche andere Formate
+            return new Date(dateString);
+        }
+
+        // Kostenanalyse für einen Standort
+        function analyzeLocationCosts(location) {
+            const region = location.region;
+            const operatorCostPerDay = COSTS.operator[region] || COSTS.operator.europe;
+            const totalOperatorCost = location.totalDays * operatorCostPerDay;
+
+            // Jährliche Kosten berechnen (basierend auf 4 Jahren Gesamtlaufzeit)
+            const annualOperatorCost = totalOperatorCost / 4;
+
+            // Für jedes System die Einsparungen berechnen
+            const systems = [
+                {
+                    name: 'K2',
+                    totalCost: COSTS.systems.k2,
+                    annualCost: COSTS.systems.k2 / 4,
+                    description: 'K2 Camera System'
+                },
+                {
+                    name: 'N6',
+                    totalCost: COSTS.systems.n6,
+                    annualCost: COSTS.systems.n6 / 4,
+                    description: 'N6 Camera System'
+                },
+                {
+                    name: 'N8',
+                    totalCost: COSTS.systems.n8,
+                    annualCost: COSTS.systems.n8 / 4,
+                    description: 'N8 Camera System'
+                }
+            ];
+
+            // Beste Empfehlung finden
+            let bestSystem = null;
+            let maxSavings = 0;
+            let roiPeriod = 999;
+
+            systems.forEach(system => {
+                const annualSavings = annualOperatorCost - system.annualCost;
+
+                if (annualSavings > maxSavings) {
+                    maxSavings = annualSavings;
+                    bestSystem = system;
+                    roiPeriod = system.totalCost / (annualOperatorCost - system.annualCost);
+                }
+            });
+
+            // Priorität basierend auf Einsparungen
+            let priority = 'low';
+            if (maxSavings > 10000) priority = 'high';
+            else if (maxSavings > 5000) priority = 'medium';
+
+            return {
+                ...location,
+                operatorCostPerDay: operatorCostPerDay,
+                totalOperatorCost: totalOperatorCost,
+                annualOperatorCost: annualOperatorCost,
+                bestSystem: bestSystem,
+                maxSavings: maxSavings,
+                roiPeriod: roiPeriod,
+                priority: priority,
+                systems: systems.map(system => ({
+                    ...system,
+                    annualSavings: annualOperatorCost - system.annualCost,
+                    roiPeriod: system.totalCost / Math.max(0.01, annualOperatorCost - system.annualCost)
+                }))
+            };
+        }
+
+        // Analyse-Ergebnisse anzeigen
+        function displayAnalysisResults() {
+            const tbody = document.getElementById('locationAnalysisBody');
+            tbody.innerHTML = '';
+
+            // Summary aktualisieren
+            const totalLocations = analysisResults.length;
+            const totalEvents = analysisResults.reduce((sum, loc) => sum + loc.events, 0);
+            const totalDays = analysisResults.reduce((sum, loc) => sum + loc.totalDays, 0);
+            const potentialSavings = analysisResults.reduce((sum, loc) => sum + (loc.maxSavings || 0), 0);
+
+            document.getElementById('totalLocations').textContent = totalLocations;
+            document.getElementById('totalEvents').textContent = totalEvents;
+            document.getElementById('totalDays').textContent = totalDays;
+            document.getElementById('potentialSavings').textContent = formatCurrency(potentialSavings);
+
+            analysisResults.forEach(location => {
+                const row = tbody.insertRow();
+
+                const recommendation = getRecommendationText(location);
+                const priorityClass = `priority-${location.priority}`;
+
+                row.innerHTML = `
+                    <td><strong>${location.location}</strong></td>
+                    <td>${location.country}</td>
+                    <td>${location.events}</td>
+                    <td>${location.totalDays}</td>
+                    <td>${formatCurrency(location.annualOperatorCost)}</td>
+                    <td>
+                        <span class="system-badge ${location.bestSystem ? location.bestSystem.name.toLowerCase() : ''}">
+                            ${location.bestSystem ? location.bestSystem.name : 'None'}
+                        </span>
+                    </td>
+                    <td class="savings ${priorityClass}">${formatCurrency(location.maxSavings)}</td>
+                    <td>${location.roiPeriod < 10 ? location.roiPeriod.toFixed(1) + ' years' : '>10 years'}</td>
+                    <td class="recommendation ${priorityClass}">${recommendation}</td>
+                `;
+            });
+        }
+
+        // Empfehlungs-Text generieren
+        function getRecommendationText(location) {
+            if (!location.bestSystem || location.maxSavings <= 0) {
+                return 'Camera operator more cost-effective';
+            }
+
+            const roiYears = location.roiPeriod;
+            if (roiYears < 1) {
+                return `Excellent ROI - ${location.bestSystem.name} immediately profitable`;
+            } else if (roiYears < 2) {
+                return `Very good ROI - ${location.bestSystem.name} within 2 years`;
+            } else if (roiYears < 4) {
+                return `Good ROI - ${location.bestSystem.name} within 4 years`;
+            } else {
+                return `Long-term investment - ${location.bestSystem.name}`;
+            }
+        }
+
+        // Währung formatieren
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+
+        // Detaillierte Empfehlungen anzeigen
+        function displayDetailedRecommendations() {
+            const container = document.getElementById('recommendationsContent');
+
+            const priorities = ['high', 'medium', 'low'];
+
+            priorities.forEach(priority => {
+                const priorityLocations = analysisResults.filter(loc => loc.priority === priority);
+
+                if (priorityLocations.length > 0) {
+                    const section = document.createElement('div');
+                    section.className = `priority-section priority-${priority}`;
+                    section.innerHTML = `
+                        <h4>${priority.charAt(0).toUpperCase() + priority.slice(1)} Priority Locations</h4>
+                        <div class="priority-locations">
+                            ${priorityLocations.map(loc => `
+                                <div class="location-card">
+                                    <div class="location-header">
+                                        <h5>${loc.location}, ${loc.country}</h5>
+                                        <span class="priority-badge ${priority}">${priority}</span>
+                                    </div>
+                                    <div class="location-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-label">Events:</span>
+                                            <span class="stat-value">${loc.events}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Production Days:</span>
+                                            <span class="stat-value">${loc.totalDays}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Annual Savings:</span>
+                                            <span class="stat-value savings">${formatCurrency(loc.maxSavings)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="system-comparison">
+                                        <h6>Recommended: ${loc.bestSystem ? loc.bestSystem.name : 'None'}</h6>
+                                        <div class="system-options">
+                                            ${loc.systems.map(system => `
+                                                <div class="system-option ${system.name.toLowerCase()}">
+                                                    <div class="system-name">${system.name}</div>
+                                                    <div class="system-details">
+                                                        <span>Annual Cost: ${formatCurrency(system.annualCost)}</span>
+                                                        <span>Savings: ${formatCurrency(system.annualSavings)}</span>
+                                                        <span>ROI: ${system.roiPeriod < 10 ? system.roiPeriod.toFixed(1) + ' years' : '>10 years'}</span>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+
+                    container.appendChild(section);
+                }
+            });
+        }
+
+        // Tab-Navigation für Empfehlungen
+        function showRecommendationTab(priority) {
+            // Tab-Buttons aktualisieren
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Content-Sektionen ein-/ausblenden
+            document.querySelectorAll('.priority-section').forEach(section => {
+                if (section.classList.contains(`priority-${priority}`)) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+
+        // Filter anwenden
+        function applyFilters() {
+            const regionFilter = document.getElementById('regionFilter').value;
+            const minEvents = parseInt(document.getElementById('minEvents').value) || 1;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filtered = analysisResults.filter(location => {
+                // Region-Filter
+                if (regionFilter !== 'all' && location.region !== regionFilter) {
+                    return false;
+                }
+
+                // Min Events-Filter
+                if (location.events < minEvents) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Sortierung
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'events':
+                        return b.events - a.events;
+                    case 'days':
+                        return b.totalDays - a.totalDays;
+                    case 'saving':
+                        return b.maxSavings - a.maxSavings;
+                    default:
+                        return 0;
+                }
+            });
+
+            // Gefilterte Ergebnisse anzeigen
+            displayFilteredResults(filtered);
+        }
+
+        // Gefilterte Ergebnisse anzeigen
+        function displayFilteredResults(filtered) {
+            const tbody = document.getElementById('locationAnalysisBody');
+            tbody.innerHTML = '';
+
+            filtered.forEach(location => {
+                const row = tbody.insertRow();
+
+                const recommendation = getRecommendationText(location);
+                const priorityClass = `priority-${location.priority}`;
+
+                row.innerHTML = `
+                    <td><strong>${location.location}</strong></td>
+                    <td>${location.country}</td>
+                    <td>${location.events}</td>
+                    <td>${location.totalDays}</td>
+                    <td>${formatCurrency(location.annualOperatorCost)}</td>
+                    <td>
+                        <span class="system-badge ${location.bestSystem ? location.bestSystem.name.toLowerCase() : ''}">
+                            ${location.bestSystem ? location.bestSystem.name : 'None'}
+                        </span>
+                    </td>
+                    <td class="savings ${priorityClass}">${formatCurrency(location.maxSavings)}</td>
+                    <td>${location.roiPeriod < 10 ? location.roiPeriod.toFixed(1) + ' years' : '>10 years'}</td>
+                    <td class="recommendation ${priorityClass}">${recommendation}</td>
+                `;
+            });
+
+            // Summary für gefilterte Ergebnisse aktualisieren
+            const totalLocations = filtered.length;
+            const totalEvents = filtered.reduce((sum, loc) => sum + loc.events, 0);
+            const totalDays = filtered.reduce((sum, loc) => sum + loc.totalDays, 0);
+            const potentialSavings = filtered.reduce((sum, loc) => sum + (loc.maxSavings || 0), 0);
+
+            document.getElementById('totalLocations').textContent = totalLocations;
+            document.getElementById('totalEvents').textContent = totalEvents;
+            document.getElementById('totalDays').textContent = totalDays;
+            document.getElementById('potentialSavings').textContent = formatCurrency(potentialSavings);
+        }
+
+        // Seite initialisieren
+        document.addEventListener('DOMContentLoaded', loadAndAnalyzeEvents);
+    </script>
+</body>
+</html>
