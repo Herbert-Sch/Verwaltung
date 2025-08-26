@@ -3016,10 +3016,11 @@ body {
 .analysis-table-container {
     background: rgba(255, 255, 255, 0.02);
     border-radius: 12px;
-    padding: 2rem;
+    padding: 1.5rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 2rem;
     overflow-x: auto;
+    width: 100%;
 }
 
 
@@ -3520,22 +3521,47 @@ body {
     display: flex;
     gap: 2rem;
     align-items: flex-start;
+    width: 100%;
+    max-width: 100%;
 }
 
 .analysis-sidebar {
     width: 25%;
     min-width: 280px;
+    max-width: 320px;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0;
     transition: width 0.3s ease;
     flex-shrink: 0;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
 }
 
 .analysis-content {
     flex: 1;
     min-width: 0;
+    width: 75%;
+}
+
+/* Override dashboard-content for analysis page */
+.dashboard-content {
+    padding: 1rem; /* Reduced padding for analysis page */
+}
+
+.dashboard-content .analysis-layout {
+    margin: 0;
+    padding: 0;
+}
+
+.dashboard-content .analysis-layout .analysis-sidebar {
+    margin: 0;
+}
+
+.dashboard-content .analysis-layout .analysis-content {
+    margin: 0;
 }
 
 .analysis-sidebar.collapsed {
@@ -3735,6 +3761,11 @@ body {
     .analysis-sidebar {
         width: 30%;
         min-width: 260px;
+        max-width: 300px;
+    }
+
+    .analysis-content {
+        width: 70%;
     }
 
     .cost-grid-4 {
