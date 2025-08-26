@@ -200,6 +200,72 @@
         </main>
     </div>
 
+    <!-- Modal für Veranstaltung bearbeiten -->
+    <div id="editEventModal" class="modal">
+        <div class="modal-content edit-event-modal">
+            <div class="modal-header">
+                <h3>Veranstaltung bearbeiten</h3>
+                <span class="modal-close" onclick="closeEditEventModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editEventForm">
+                    <input type="hidden" id="editEventLocationIndex">
+                    <input type="hidden" id="editEventIndex">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEventName">Veranstaltungsname *</label>
+                            <input type="text" id="editEventName" name="editEventName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEventStartDate">Startdatum *</label>
+                            <input type="date" id="editEventStartDate" name="editEventStartDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEventEndDate">Enddatum *</label>
+                            <input type="date" id="editEventEndDate" name="editEventEndDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEventDiscipline">Disziplin</label>
+                            <input type="text" id="editEventDiscipline" name="editEventDiscipline">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEventManager">Event Manager</label>
+                            <input type="text" id="editEventManager" name="editEventManager">
+                        </div>
+                        <div class="form-group">
+                            <label for="editEventKiSuitable">KI-geeignet</label>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="editEventKiSuitable" name="editEventKiSuitable">
+                                <label for="editEventKiSuitable" class="checkbox-label">
+                                    Diese Veranstaltung eignet sich für KI-Aufzeichnung
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEventNotes">Notizen</label>
+                            <textarea id="editEventNotes" name="editEventNotes" rows="3" placeholder="Zusätzliche Notizen zur Veranstaltung..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-danger" onclick="deleteEvent()">Veranstaltung löschen</button>
+                <button type="button" class="btn-secondary" onclick="closeEditEventModal()">Abbrechen</button>
+                <button type="button" class="btn-primary" onclick="saveEditedEvent()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Check if user is logged in
         const currentUser = localStorage.getItem('currentUser');
@@ -220,6 +286,8 @@
         let filteredResults = [];
         let currentPage = 1;
         const itemsPerPage = 25;
+        let currentEditingLocationIndex = null;
+        let currentEditingEventIndex = null;
 
         // Kosten-Konstanten
         const COSTS = {
@@ -286,7 +354,8 @@
                 // Event kopieren um es zu erweitern
                 const eventWithDays = {
                     ...event,
-                    days: calculateEventDays(event.start_date, event.end_date)
+                    days: calculateEventDays(event.start_date, event.end_date),
+                    kiSuitable: event.kiSuitable || false  // KI-Suitability Flag
                 };
 
                 locationGroups[location].events.push(eventWithDays);
@@ -306,8 +375,18 @@
                 return analyzeLocationCosts(location);
             });
 
-            // Nach Produktionstagen sortieren (Rentabilität - Standard)
-            analysisResults.sort((a, b) => b.totalDays - a.totalDays);
+            // Nach KI-Suitability und Produktionstagen sortieren
+            analysisResults.sort((a, b) => {
+                // Zuerst prüfen, ob einer der Standorte KI-geeignete Veranstaltungen hat
+                const aHasKiSuitable = a.events.some(event => event.kiSuitable);
+                const bHasKiSuitable = b.events.some(event => event.kiSuitable);
+
+                if (aHasKiSuitable && !bHasKiSuitable) return -1; // a zuerst
+                if (!aHasKiSuitable && bHasKiSuitable) return 1;  // b zuerst
+
+                // Bei gleichem KI-Status nach Produktionstagen sortieren
+                return b.totalDays - a.totalDays;
+            });
 
             // Dynamische Tageskosten basierend auf Gesamtauslastung berechnen
             updateDynamicCosts();
@@ -514,8 +593,13 @@
                 const row = tbody.insertRow();
                 row.className = 'location-row';
 
-                // Events für diesen Standort sortieren nach Datum
+                // Events für diesen Standort sortieren: KI-geeignete zuerst, dann nach Datum
                 const sortedEvents = location.events.sort((a, b) => {
+                    // KI-geeignete Veranstaltungen haben Priorität
+                    if (a.kiSuitable && !b.kiSuitable) return -1;
+                    if (!a.kiSuitable && b.kiSuitable) return 1;
+
+                    // Bei gleichem KI-Status nach Datum sortieren
                     const dateA = parseGermanDate(a.start_date);
                     const dateB = parseGermanDate(b.start_date);
                     return dateA - dateB;
@@ -565,9 +649,17 @@
                                         const eventDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
                                         return `
                                             <div class="event-item">
-                                                <div class="event-name"><strong>${event.name}</strong></div>
+                                                <div class="event-header">
+                                                    <div class="event-name"><strong>${event.name}</strong></div>
+                                                    <button class="edit-event-btn" onclick="openEditEventModal(${globalIndex}, ${pageIndex})" title="Veranstaltung bearbeiten">
+                                                        ✏️ Edit
+                                                    </button>
+                                                </div>
                                                 <div class="event-dates">${formatDateRange(startDate, endDate)}</div>
                                                 <div class="event-days">${eventDays} Tage</div>
+                                                <div class="event-ki-status">
+                                                    ${event.kiSuitable ? '<span class="ki-badge ki-suitable">🤖 KI-geeignet</span>' : '<span class="ki-badge ki-not-suitable">❌ Nicht KI-geeignet</span>'}
+                                                </div>
                                             </div>
                                         `;
                                     }).join('')}
@@ -764,8 +856,13 @@
                 const recommendation = getRecommendationText(location);
                 const priorityClass = `priority-${location.priority}`;
 
-                // Events für diesen Standort sortieren nach Datum
+                // Events für diesen Standort sortieren: KI-geeignete zuerst, dann nach Datum
                 const sortedEvents = location.events.sort((a, b) => {
+                    // KI-geeignete Veranstaltungen haben Priorität
+                    if (a.kiSuitable && !b.kiSuitable) return -1;
+                    if (!a.kiSuitable && b.kiSuitable) return 1;
+
+                    // Bei gleichem KI-Status nach Datum sortieren
                     const dateA = parseGermanDate(a.start_date);
                     const dateB = parseGermanDate(b.start_date);
                     return dateA - dateB;
@@ -1023,6 +1120,108 @@
                 `;
             } else {
                 activeFiltersDiv.innerHTML = '<p>Keine Filter aktiv</p>';
+            }
+        }
+
+        // Veranstaltung Edit Modal Funktionen
+        function openEditEventModal(locationIndex, eventIndex) {
+            currentEditingLocationIndex = locationIndex;
+            currentEditingEventIndex = eventIndex;
+
+            const location = filteredResults[locationIndex];
+            const event = location.events[eventIndex];
+
+            // Formular mit aktuellen Daten füllen
+            document.getElementById('editEventName').value = event.name || '';
+            document.getElementById('editEventStartDate').value = event.start_date || '';
+            document.getElementById('editEventEndDate').value = event.end_date || '';
+            document.getElementById('editEventDiscipline').value = event.discipline || '';
+            document.getElementById('editEventManager').value = event.event_manager || '';
+            document.getElementById('editEventKiSuitable').checked = event.kiSuitable || false;
+            document.getElementById('editEventNotes').value = event.notes || '';
+
+            // Modal anzeigen
+            document.getElementById('editEventModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditEventModal() {
+            document.getElementById('editEventModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentEditingLocationIndex = null;
+            currentEditingEventIndex = null;
+        }
+
+        function saveEditedEvent() {
+            if (currentEditingLocationIndex === null || currentEditingEventIndex === null) {
+                alert('Fehler: Keine Veranstaltung ausgewählt');
+                return;
+            }
+
+            const form = document.getElementById('editEventForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Neue Daten aus dem Formular sammeln
+            const updatedEvent = {
+                name: document.getElementById('editEventName').value,
+                start_date: document.getElementById('editEventStartDate').value,
+                end_date: document.getElementById('editEventEndDate').value,
+                discipline: document.getElementById('editEventDiscipline').value,
+                event_manager: document.getElementById('editEventManager').value,
+                kiSuitable: document.getElementById('editEventKiSuitable').checked,
+                notes: document.getElementById('editEventNotes').value
+            };
+
+            // Veranstaltung aktualisieren
+            filteredResults[currentEditingLocationIndex].events[currentEditingEventIndex] = updatedEvent;
+
+            // Daten neu berechnen und anzeigen
+            analyzeLocations(filteredResults[currentEditingLocationIndex]);
+            displayAnalysisResults();
+
+            // Modal schließen
+            closeEditEventModal();
+
+            alert('Veranstaltung erfolgreich aktualisiert!');
+        }
+
+        function deleteEvent() {
+            if (currentEditingLocationIndex === null || currentEditingEventIndex === null) {
+                alert('Fehler: Keine Veranstaltung ausgewählt');
+                return;
+            }
+
+            if (!confirm('Sind Sie sicher, dass Sie diese Veranstaltung löschen möchten?')) {
+                return;
+            }
+
+            // Veranstaltung entfernen
+            filteredResults[currentEditingLocationIndex].events.splice(currentEditingEventIndex, 1);
+
+            // Daten neu berechnen und anzeigen
+            if (filteredResults[currentEditingLocationIndex].events.length === 0) {
+                // Standort entfernen wenn keine Veranstaltungen mehr vorhanden
+                filteredResults.splice(currentEditingLocationIndex, 1);
+            } else {
+                analyzeLocations(filteredResults[currentEditingLocationIndex]);
+            }
+
+            displayAnalysisResults();
+
+            // Modal schließen
+            closeEditEventModal();
+
+            alert('Veranstaltung erfolgreich gelöscht!');
+        }
+
+        // Modal schließen beim Klick außerhalb
+        window.onclick = function(event) {
+            const editEventModal = document.getElementById('editEventModal');
+            if (event.target === editEventModal) {
+                closeEditEventModal();
             }
         }
 
