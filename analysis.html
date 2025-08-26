@@ -197,19 +197,7 @@
                 </div>
             </div>
 
-            <!-- Detaillierte Empfehlungen -->
-            <div id="detailedRecommendations" class="detailed-recommendations" style="display: none;">
-                <h3>Detailed Recommendations</h3>
-                <div class="recommendation-tabs">
-                    <button class="tab-btn active" onclick="showRecommendationTab('high')">High Priority</button>
-                    <button class="tab-btn" onclick="showRecommendationTab('medium')">Medium Priority</button>
-                    <button class="tab-btn" onclick="showRecommendationTab('low')">Low Priority</button>
-                </div>
 
-                <div id="recommendationsContent" class="recommendations-content">
-                    <!-- Dynamisch geladen -->
-                </div>
-            </div>
         </main>
     </div>
 
@@ -254,7 +242,7 @@
             try {
                 document.getElementById('loadingIndicator').style.display = 'block';
                 document.getElementById('analysisResults').style.display = 'none';
-                document.getElementById('detailedRecommendations').style.display = 'none';
+
 
                 console.log('📊 Loading events data for analysis...');
 
@@ -334,11 +322,11 @@
 
             // Ergebnisse anzeigen
             displayAnalysisResults();
-            displayDetailedRecommendations();
+
 
             document.getElementById('loadingIndicator').style.display = 'none';
             document.getElementById('analysisResults').style.display = 'block';
-            document.getElementById('detailedRecommendations').style.display = 'block';
+
         }
 
         // Region basierend auf Land bestimmen
@@ -436,10 +424,7 @@
                 }
             });
 
-            // Priorität basierend auf täglichen Einsparungen
-            let priority = 'low';
-            if (maxDailySavings > 100) priority = 'high';
-            else if (maxDailySavings > 50) priority = 'medium';
+
 
             return {
                 ...location,
@@ -451,7 +436,6 @@
                 maxDailySavings: maxDailySavings,
                 maxAnnualSavings: maxDailySavings * annualProductionDays,
                 roiPeriod: roiPeriod,
-                priority: priority,
                 systems: systems.map(system => {
                     const dailySavings = operatorCostPerDay - system.dailyCost;
                     const annualSavings = dailySavings * annualProductionDays;
@@ -531,9 +515,6 @@
                 const row = tbody.insertRow();
                 row.className = 'location-row';
 
-                const recommendation = getRecommendationText(location);
-                const priorityClass = `priority-${location.priority}`;
-
                 // Events für diesen Standort sortieren nach Datum
                 const sortedEvents = location.events.sort((a, b) => {
                     const dateA = parseGermanDate(a.start_date);
@@ -586,11 +567,7 @@
                             </div>
                         </div>
                     </td>
-                    <td class="recommendation-cell ${priorityClass}">
-                        <div class="recommendation-badge">${location.bestSystem ? location.bestSystem.name : 'Kameramann'}</div>
-                        <div class="recommendation-text">${recommendation}</div>
-                        <div class="savings-info">€${location.maxDailySavings.toFixed(0)}/Tag Ersparnis</div>
-                    </td>
+
                 `;
             });
         }
@@ -664,24 +641,7 @@
         }
 
         // Empfehlungs-Text generieren
-        function getRecommendationText(location) {
-            if (!location.bestSystem || location.maxDailySavings <= 0) {
-                return 'Kameramann rentabler';
-            }
 
-            const dailySavings = location.maxDailySavings;
-            const roiYears = location.roiPeriod;
-
-            if (dailySavings > 200) {
-                return `Exzellente Einsparung - ${location.bestSystem.name} sofort rentabel`;
-            } else if (dailySavings > 100) {
-                return `Sehr gute Einsparung - ${location.bestSystem.name} innerhalb 2 Jahren`;
-            } else if (dailySavings > 50) {
-                return `Gute Einsparung - ${location.bestSystem.name} innerhalb 4 Jahren`;
-            } else {
-                return `Langfristige Investition - ${location.bestSystem.name}`;
-            }
-        }
 
         // Währung formatieren
         function formatCurrency(amount) {
@@ -716,81 +676,10 @@
             }
         }
 
-        // Detaillierte Empfehlungen anzeigen
-        function displayDetailedRecommendations() {
-            const container = document.getElementById('recommendationsContent');
 
-            const priorities = ['high', 'medium', 'low'];
 
-            priorities.forEach(priority => {
-                const priorityLocations = analysisResults.filter(loc => loc.priority === priority);
 
-                if (priorityLocations.length > 0) {
-                    const section = document.createElement('div');
-                    section.className = `priority-section priority-${priority}`;
-                    section.innerHTML = `
-                        <h4>${priority.charAt(0).toUpperCase() + priority.slice(1)} Priority Locations</h4>
-                        <div class="priority-locations">
-                            ${priorityLocations.map(loc => `
-                                <div class="location-card">
-                                    <div class="location-header">
-                                        <h5>${loc.location}, ${loc.country}</h5>
-                                        <span class="priority-badge ${priority}">${priority}</span>
-                                    </div>
-                                    <div class="location-stats">
-                                        <div class="stat-item">
-                                            <span class="stat-label">Events:</span>
-                                            <span class="stat-value">${loc.events}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Production Days:</span>
-                                            <span class="stat-value">${loc.totalDays}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Annual Savings:</span>
-                                            <span class="stat-value savings">${formatCurrency(loc.maxSavings)}</span>
-                                        </div>
-                                    </div>
-                                    <div class="system-comparison">
-                                        <h6>Recommended: ${loc.bestSystem ? loc.bestSystem.name : 'None'}</h6>
-                                        <div class="system-options">
-                                            ${loc.systems.map(system => `
-                                                <div class="system-option ${system.name.toLowerCase()}">
-                                                    <div class="system-name">${system.name}</div>
-                                                    <div class="system-details">
-                                                        <span>Annual Cost: ${formatCurrency(system.annualCost)}</span>
-                                                        <span>Savings: ${formatCurrency(system.annualSavings)}</span>
-                                                        <span>ROI: ${system.roiPeriod < 10 ? system.roiPeriod.toFixed(1) + ' years' : '>10 years'}</span>
-                                                    </div>
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
 
-                    container.appendChild(section);
-                }
-            });
-        }
-
-        // Tab-Navigation für Empfehlungen
-        function showRecommendationTab(priority) {
-            // Tab-Buttons aktualisieren
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Content-Sektionen ein-/ausblenden
-            document.querySelectorAll('.priority-section').forEach(section => {
-                if (section.classList.contains(`priority-${priority}`)) {
-                    section.style.display = 'block';
-                } else {
-                    section.style.display = 'none';
-                }
-            });
-        }
 
         // Filter anwenden
         function applyFilters() {
