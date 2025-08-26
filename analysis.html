@@ -122,22 +122,22 @@
             <!-- Analyse-Ergebnisse -->
             <div id="analysisResults" class="analysis-results" style="display: none;">
                 <div class="analysis-summary">
-                    <h3>Analysis Summary</h3>
+                    <h3>Standort Analyse - Übersicht</h3>
                     <div class="summary-stats">
                         <div class="summary-item">
-                            <span class="summary-label">Total Locations:</span>
+                            <span class="summary-label">Standorte gesamt:</span>
                             <span class="summary-value" id="totalLocations">-</span>
                         </div>
                         <div class="summary-item">
-                            <span class="summary-label">Total Events:</span>
+                            <span class="summary-label">Events gesamt:</span>
                             <span class="summary-value" id="totalEvents">-</span>
                         </div>
                         <div class="summary-item">
-                            <span class="summary-label">Total Production Days:</span>
+                            <span class="summary-label">Produktionstage gesamt:</span>
                             <span class="summary-value" id="totalDays">-</span>
                         </div>
                         <div class="summary-item">
-                            <span class="summary-label">Potential Annual Savings:</span>
+                            <span class="summary-label">Potenzielle Jahreseinsparungen:</span>
                             <span class="summary-value" id="potentialSavings">-</span>
                         </div>
                     </div>
@@ -147,15 +147,13 @@
                     <table class="analysis-table" id="locationAnalysisTable">
                         <thead>
                             <tr>
-                                <th>Location</th>
-                                <th>Country</th>
-                                <th>Events</th>
-                                <th>Production Days</th>
-                                <th>Operator Cost</th>
-                                <th>Recommended System</th>
-                                <th>Annual Savings</th>
-                                <th>ROI Period</th>
-                                <th>Recommendation</th>
+                                <th>Standort</th>
+                                <th>Land</th>
+                                <th>Veranstaltungen</th>
+                                <th>Gesamt Tage</th>
+                                <th>Kameramann Gesamtkosten</th>
+                                <th>KI-System Tageskosten</th>
+                                <th>Empfehlung</th>
                             </tr>
                         </thead>
                         <tbody id="locationAnalysisBody">
@@ -445,26 +443,67 @@
             document.getElementById('totalDays').textContent = totalDays;
             document.getElementById('potentialSavings').textContent = formatCurrency(potentialSavings);
 
-            analysisResults.forEach(location => {
+            analysisResults.forEach((location, index) => {
                 const row = tbody.insertRow();
+                row.className = 'location-row';
 
                 const recommendation = getRecommendationText(location);
                 const priorityClass = `priority-${location.priority}`;
 
+                // Events für diesen Standort sortieren nach Datum
+                const sortedEvents = location.events.sort((a, b) => new Date(a['Start-Date']) - new Date(b['Start-Date']));
+
+                // Event-Details für kompakte Darstellung vorbereiten
+                const eventSummary = sortedEvents.length > 1
+                    ? `${sortedEvents[0].name} (${formatDateRange(new Date(sortedEvents[0]['Start-Date']), new Date(sortedEvents[0]['End-Date']))}) +${sortedEvents.length - 1} weitere`
+                    : `${sortedEvents[0].name} (${formatDateRange(new Date(sortedEvents[0]['Start-Date']), new Date(sortedEvents[0]['End-Date']))})`;
+
+                // Kameramann Gesamtkosten für alle Events
+                const totalOperatorCost = location.totalDays * location.operatorCostPerDay;
+
+                // KI-System Kosten pro Tag
+                const n6DailyCost = COSTS.systems.n6 / (location.annualProductionDays * 4);
+                const n8DailyCost = COSTS.systems.n8 / (location.annualProductionDays * 4);
+
                 row.innerHTML = `
                     <td><strong>${location.location}</strong></td>
                     <td>${location.country}</td>
-                    <td>${location.events}</td>
-                    <td>${location.totalDays}</td>
-                    <td>${formatCurrency(location.operatorCostPerDay)}/Tag</td>
                     <td>
-                        <span class="system-badge ${location.bestSystem ? location.bestSystem.name.toLowerCase() : ''}">
-                            ${location.bestSystem ? location.bestSystem.name : 'None'}
-                        </span>
+                        <div class="events-cell">
+                            <div class="event-summary" onclick="toggleEvents(${index})">
+                                <span class="event-count">${location.events} Events</span>
+                                <span class="toggle-icon">▼</span>
+                            </div>
+                            <div class="event-details" id="events-${index}" style="display: none;">
+                                ${sortedEvents.map(event => `
+                                    <div class="event-item">
+                                        <strong>${event.name}</strong><br>
+                                        <small>${formatDateRange(new Date(event['Start-Date']), new Date(event['End-Date']))} (${calculateEventDays(event['Start-Date'], event['End-Date'])} Tage)</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </td>
-                    <td class="savings ${priorityClass}">€${location.maxDailySavings.toFixed(0)}/Tag</td>
-                    <td>${location.roiPeriod < 10 ? location.roiPeriod.toFixed(1) + ' Jahre' : '>10 Jahre'}</td>
-                    <td class="recommendation ${priorityClass}">${recommendation}</td>
+                    <td><strong>${location.totalDays} Tage</strong></td>
+                    <td class="operator-cost">${formatCurrency(totalOperatorCost)}</td>
+                    <td>
+                        <div class="system-costs">
+                            <div class="system-cost k2-cost disabled">
+                                K2: €${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag
+                            </div>
+                            <div class="system-cost n6-cost">
+                                N6: €${n6DailyCost.toFixed(0)}/Tag
+                            </div>
+                            <div class="system-cost n8-cost">
+                                N8: €${n8DailyCost.toFixed(0)}/Tag
+                            </div>
+                        </div>
+                    </td>
+                    <td class="recommendation-cell ${priorityClass}">
+                        <div class="recommendation-badge">${location.bestSystem ? location.bestSystem.name : 'Kameramann'}</div>
+                        <div class="recommendation-text">${recommendation}</div>
+                        <div class="savings-info">€${location.maxDailySavings.toFixed(0)}/Tag Ersparnis</div>
+                    </td>
                 `;
             });
         }
@@ -611,31 +650,81 @@
             displayFilteredResults(filtered);
         }
 
+        // Events ein-/ausklappen
+        function toggleEvents(index) {
+            const detailsDiv = document.getElementById(`events-${index}`);
+            const toggleIcon = detailsDiv.previousElementSibling.querySelector('.toggle-icon');
+
+            if (detailsDiv.style.display === 'none') {
+                detailsDiv.style.display = 'block';
+                toggleIcon.textContent = '▲';
+            } else {
+                detailsDiv.style.display = 'none';
+                toggleIcon.textContent = '▼';
+            }
+        }
+
         // Gefilterte Ergebnisse anzeigen
         function displayFilteredResults(filtered) {
             const tbody = document.getElementById('locationAnalysisBody');
             tbody.innerHTML = '';
 
-            filtered.forEach(location => {
+            filtered.forEach((location, index) => {
                 const row = tbody.insertRow();
+                row.className = 'location-row';
 
                 const recommendation = getRecommendationText(location);
                 const priorityClass = `priority-${location.priority}`;
 
+                // Events für diesen Standort sortieren nach Datum
+                const sortedEvents = location.events.sort((a, b) => new Date(a['Start-Date']) - new Date(b['Start-Date']));
+
+                // Kameramann Gesamtkosten für alle Events
+                const totalOperatorCost = location.totalDays * location.operatorCostPerDay;
+
+                // KI-System Kosten pro Tag
+                const n6DailyCost = COSTS.systems.n6 / (location.annualProductionDays * 4);
+                const n8DailyCost = COSTS.systems.n8 / (location.annualProductionDays * 4);
+
                 row.innerHTML = `
                     <td><strong>${location.location}</strong></td>
                     <td>${location.country}</td>
-                    <td>${location.events}</td>
-                    <td>${location.totalDays}</td>
-                    <td>${formatCurrency(location.operatorCostPerDay)}/Tag</td>
                     <td>
-                        <span class="system-badge ${location.bestSystem ? location.bestSystem.name.toLowerCase() : ''}">
-                            ${location.bestSystem ? location.bestSystem.name : 'None'}
-                        </span>
+                        <div class="events-cell">
+                            <div class="event-summary" onclick="toggleEvents(${index})">
+                                <span class="event-count">${location.events} Events</span>
+                                <span class="toggle-icon">▼</span>
+                            </div>
+                            <div class="event-details" id="events-${index}" style="display: none;">
+                                ${sortedEvents.map(event => `
+                                    <div class="event-item">
+                                        <strong>${event.name}</strong><br>
+                                        <small>${formatDateRange(new Date(event['Start-Date']), new Date(event['End-Date']))} (${calculateEventDays(event['Start-Date'], event['End-Date'])} Tage)</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </td>
-                    <td class="savings ${priorityClass}">€${location.maxDailySavings.toFixed(0)}/Tag</td>
-                    <td>${location.roiPeriod < 10 ? location.roiPeriod.toFixed(1) + ' Jahre' : '>10 Jahre'}</td>
-                    <td class="recommendation ${priorityClass}">${recommendation}</td>
+                    <td><strong>${location.totalDays} Tage</strong></td>
+                    <td class="operator-cost">${formatCurrency(totalOperatorCost)}</td>
+                    <td>
+                        <div class="system-costs">
+                            <div class="system-cost k2-cost disabled">
+                                K2: €${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag
+                            </div>
+                            <div class="system-cost n6-cost">
+                                N6: €${n6DailyCost.toFixed(0)}/Tag
+                            </div>
+                            <div class="system-cost n8-cost">
+                                N8: €${n8DailyCost.toFixed(0)}/Tag
+                            </div>
+                        </div>
+                    </td>
+                    <td class="recommendation-cell ${priorityClass}">
+                        <div class="recommendation-badge">${location.bestSystem ? location.bestSystem.name : 'Kameramann'}</div>
+                        <div class="recommendation-text">${recommendation}</div>
+                        <div class="savings-info">€${location.maxDailySavings.toFixed(0)}/Tag Ersparnis</div>
+                    </td>
                 `;
             });
 

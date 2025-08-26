@@ -3019,6 +3019,7 @@ body {
     padding: 2rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 2rem;
+    overflow-x: auto;
 }
 
 .analysis-table {
@@ -3045,6 +3046,182 @@ body {
 
 .analysis-table td {
     color: #ffffff;
+    vertical-align: top;
+    padding: 1.5rem 1rem;
+    min-height: 80px;
+}
+
+.location-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.location-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Events Cell Styles */
+.events-cell {
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-summary {
+    cursor: pointer;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.event-summary:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.event-count {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.toggle-icon {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    transition: transform 0.3s ease;
+}
+
+.event-details {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-item:last-child {
+    border-bottom: none;
+}
+
+.event-item strong {
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.event-item small {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+}
+
+/* Operator Cost Cell */
+.operator-cost {
+    font-weight: 700;
+    color: #B30918;
+    font-size: 1.1rem;
+}
+
+/* System Costs Cell */
+.system-costs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 80px;
+}
+
+.system-cost {
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.system-cost.disabled {
+    background: rgba(128, 128, 128, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.system-cost.n6-cost {
+    background: rgba(255, 152, 0, 0.1);
+    color: #FF9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.system-cost.n8-cost {
+    background: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+/* Recommendation Cell */
+.recommendation-cell {
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.recommendation-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    align-self: flex-start;
+}
+
+.recommendation-badge.K2 {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.recommendation-badge.N6 {
+    background: rgba(255, 152, 0, 0.2);
+    color: #FF9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.recommendation-badge.N8 {
+    background: rgba(156, 39, 176, 0.2);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+.recommendation-text {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
+}
+
+.savings-info {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.priority-high .savings-info {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.priority-medium .savings-info {
+    background: rgba(255, 152, 0, 0.2);
+    color: #FF9800;
+}
+
+.priority-low .savings-info {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
 }
 
 .system-badge {
@@ -3309,6 +3486,15 @@ body {
     .summary-stats {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .analysis-table {
+        font-size: 0.8rem;
+    }
+
+    .analysis-table th,
+    .analysis-table td {
+        padding: 1rem 0.5rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -3344,6 +3530,48 @@ body {
 
     .recommendation-tabs {
         flex-direction: column;
+    }
+
+    /* Mobile Table Styles */
+    .analysis-table-container {
+        padding: 1rem;
+    }
+
+    .analysis-table {
+        font-size: 0.75rem;
+        min-width: 800px; /* Ensure table doesn't get too cramped */
+    }
+
+    .analysis-table th,
+    .analysis-table td {
+        padding: 0.75rem 0.25rem;
+        min-height: 60px;
+    }
+
+    .events-cell {
+        min-height: 60px;
+    }
+
+    .system-costs {
+        min-height: 60px;
+        gap: 0.25rem;
+    }
+
+    .recommendation-cell {
+        min-height: 60px;
+        gap: 0.25rem;
+    }
+
+    .event-summary {
+        padding: 0.5rem;
+    }
+
+    .event-details {
+        padding: 0.75rem;
+    }
+
+    .event-item {
+        padding: 0.5rem 0;
     }
 }
     
