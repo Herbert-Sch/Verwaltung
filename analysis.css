@@ -419,28 +419,24 @@ body {
 
 /* Column Widths */
 .analysis-table th:nth-child(1), .analysis-table td:nth-child(1) { /* Standort */
-    width: 15%;
-    min-width: 120px;
+    width: 20%;
+    min-width: 150px;
 }
 .analysis-table th:nth-child(2), .analysis-table td:nth-child(2) { /* Land */
     width: 8%;
     min-width: 80px;
 }
-.analysis-table th:nth-child(3), .analysis-table td:nth-child(3) { /* Veranstaltungen */
-    width: 20%;
-    min-width: 150px;
-}
-.analysis-table th:nth-child(4), .analysis-table td:nth-child(4) { /* Gesamt Tage */
-    width: 10%;
+.analysis-table th:nth-child(3), .analysis-table td:nth-child(3) { /* Gesamt Tage */
+    width: 12%;
     min-width: 100px;
 }
-.analysis-table th:nth-child(5), .analysis-table td:nth-child(5) { /* Kameramann */
-    width: 15%;
+.analysis-table th:nth-child(4), .analysis-table td:nth-child(4) { /* Kameramann */
+    width: 18%;
     min-width: 140px;
 }
-.analysis-table th:nth-child(6), .analysis-table td:nth-child(6) { /* KI-Systeme */
-    width: 32%;
-    min-width: 250px;
+.analysis-table th:nth-child(5), .analysis-table td:nth-child(5) { /* KI-Systeme */
+    width: 42%;
+    min-width: 300px;
 }
 
 .location-row {
@@ -458,22 +454,39 @@ body {
     flex-direction: column;
 }
 
+/* Full-width Events Row */
+.events-row {
+    background: #f8f9fa;
+    border: none;
+    padding: 0;
+}
+
+.events-cell-fullwidth {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin: 0.25rem 0;
+}
+
 .event-summary {
     cursor: pointer;
-    padding: 0.75rem;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
+    padding: 1rem;
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
     transition: all 0.3s ease;
+    font-weight: 600;
+    color: #070E16;
 }
 
 .event-summary:hover {
-    background: #e9ecef;
+    background: #f8f9fa;
     border-color: #B30918;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(179, 9, 24, 0.15);
 }
 
 .event-count {
@@ -482,35 +495,58 @@ body {
 }
 
 .toggle-icon {
-    font-size: 0.8rem;
-    color: #6c757d;
-    transition: transform 0.3s ease;
+    font-size: 1.2rem;
+    color: #B30918;
+    transition: all 0.3s ease;
+    font-weight: bold;
 }
 
 .event-details {
-    background: #f8f9fa;
+    background: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* Events Grid Layout */
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
 .event-item {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #e0e0e0;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.event-item:last-child {
-    border-bottom: none;
+.event-item:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.event-item strong {
+.event-name {
+    font-size: 1rem;
     color: #070E16;
-    font-size: 0.9rem;
+    font-weight: 600;
 }
 
-.event-item small {
+.event-dates {
+    font-size: 0.9rem;
     color: #6c757d;
-    font-size: 0.75rem;
+}
+
+.event-days {
+    font-size: 0.8rem;
+    color: #B30918;
+    font-weight: 500;
+    align-self: flex-end;
 }
 
 /* Cost Display */
@@ -812,6 +848,28 @@ body {
 
     .pagination-info {
         text-align: center;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .event-item {
+        padding: 0.75rem;
+    }
+
+    .event-name {
+        font-size: 0.9rem;
+    }
+
+    .event-dates {
+        font-size: 0.8rem;
+    }
+
+    .event-days {
+        font-size: 0.75rem;
+        align-self: flex-start;
     }
 
     .cost-grid-4 {

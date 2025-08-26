@@ -164,7 +164,6 @@
                                     <tr>
                                         <th>Standort</th>
                                         <th>Land</th>
-                                        <th>Veranstaltungen</th>
                                         <th>Gesamt Tage</th>
                                         <th>🎬 Kameramann</th>
                                         <th>🤖 KI-Systeme</th>
@@ -532,26 +531,6 @@
                 row.innerHTML = `
                     <td><strong>${location.location}</strong></td>
                     <td>${location.country}</td>
-                    <td>
-                        <div class="events-cell">
-                            <div class="event-summary" onclick="toggleEvents(${globalIndex})">
-                                <span class="event-count">${location.events.length} Events</span>
-                                <span class="toggle-icon">▼</span>
-                            </div>
-                            <div class="event-details" id="events-${globalIndex}" style="display: none;">
-                                ${sortedEvents.map(event => {
-                                    const startDate = parseGermanDate(event.start_date);
-                                    const endDate = parseGermanDate(event.end_date);
-                                    return `
-                                        <div class="event-item">
-                                            <strong>${event.name}</strong><br>
-                                            <small>${formatDateRange(startDate, endDate)} (${event.days} Tage)</small>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    </td>
                     <td><strong>${location.totalDays} Tage</strong></td>
                     <td class="operator-cost">${formatCurrency(totalOperatorCost)}</td>
                     <td>
@@ -567,7 +546,35 @@
                             </div>
                         </div>
                     </td>
+                `;
 
+                // Zweite Zeile für Veranstaltungen (volle Breite)
+                const eventsRow = tbody.insertRow();
+                eventsRow.innerHTML = `
+                    <td colspan="5" class="events-row">
+                        <div class="events-cell-fullwidth">
+                            <div class="event-summary" onclick="toggleEvents(${globalIndex})">
+                                <span class="event-count">${location.events.length} Veranstaltungen</span>
+                                <span class="toggle-icon">▼</span>
+                            </div>
+                            <div class="event-details" id="events-${globalIndex}" style="display: none;">
+                                <div class="events-grid">
+                                    ${sortedEvents.map(event => {
+                                        const startDate = parseGermanDate(event.start_date);
+                                        const endDate = parseGermanDate(event.end_date);
+                                        const eventDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                                        return `
+                                            <div class="event-item">
+                                                <div class="event-name"><strong>${event.name}</strong></div>
+                                                <div class="event-dates">${formatDateRange(startDate, endDate)}</div>
+                                                <div class="event-days">${eventDays} Tage</div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
                 `;
             });
         }
