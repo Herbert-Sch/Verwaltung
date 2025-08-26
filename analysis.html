@@ -175,6 +175,24 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Pagination Controls -->
+                        <div class="pagination-controls">
+                            <div class="pagination-info">
+                                <span id="paginationInfo">Zeige 1-25 von 233 Standorten</span>
+                            </div>
+                            <div class="pagination-buttons">
+                                <button id="prevPage" onclick="goToPage(currentPage - 1)" disabled>
+                                    ◀ Vorherige
+                                </button>
+                                <span id="pageNumbers">
+                                    <!-- Seiten-Buttons werden dynamisch generiert -->
+                                </span>
+                                <button id="nextPage" onclick="goToPage(currentPage + 1)">
+                                    Nächste ▶
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -214,7 +232,7 @@
         let analysisResults = [];
         let filteredResults = [];
         let currentPage = 1;
-        const itemsPerPage = 10;
+        const itemsPerPage = 25;
 
         // Kosten-Konstanten
         const COSTS = {
@@ -312,6 +330,7 @@
 
             // Gefilterte Ergebnisse initial setzen
             filteredResults = [...analysisResults];
+            currentPage = 1;
 
             // Ergebnisse anzeigen
             displayAnalysisResults();
@@ -473,23 +492,42 @@
             console.log('💰 Dynamic costs calculation completed - elements updated if present');
         }
 
-        // Analyse-Ergebnisse anzeigen
+        // Analyse-Ergebnisse anzeigen mit Pagination
         function displayAnalysisResults() {
             const tbody = document.getElementById('locationAnalysisBody');
             tbody.innerHTML = '';
 
             // Summary aktualisieren
-            const totalLocations = analysisResults.length;
-            const totalEvents = analysisResults.reduce((sum, loc) => sum + loc.events.length, 0);
-            const totalDays = analysisResults.reduce((sum, loc) => sum + loc.totalDays, 0);
-            const potentialSavings = analysisResults.reduce((sum, loc) => sum + (loc.maxAnnualSavings || 0), 0);
+            const totalLocations = filteredResults.length;
+            const totalEvents = filteredResults.reduce((sum, loc) => sum + loc.events.length, 0);
+            const totalDays = filteredResults.reduce((sum, loc) => sum + loc.totalDays, 0);
+            const potentialSavings = filteredResults.reduce((sum, loc) => sum + (loc.maxAnnualSavings || 0), 0);
 
             document.getElementById('totalLocations').textContent = totalLocations;
             document.getElementById('totalEvents').textContent = totalEvents;
             document.getElementById('totalDays').textContent = totalDays;
             document.getElementById('potentialSavings').textContent = formatCurrency(potentialSavings);
 
-            analysisResults.forEach((location, index) => {
+            // Pagination berechnen
+            const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredResults.length);
+            const currentPageData = filteredResults.slice(startIndex, endIndex);
+
+            // Pagination Info aktualisieren
+            const startItem = startIndex + 1;
+            const endItem = endIndex;
+            document.getElementById('paginationInfo').textContent = `Zeige ${startItem}-${endItem} von ${filteredResults.length} Standorten`;
+
+            // Vor-/Zurück-Buttons aktivieren/deaktivieren
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+
+            // Seiten-Buttons generieren
+            generatePageNumbers(totalPages);
+
+            currentPageData.forEach((location, pageIndex) => {
+                const globalIndex = startIndex + pageIndex;
                 const row = tbody.insertRow();
                 row.className = 'location-row';
 
@@ -515,11 +553,11 @@
                     <td>${location.country}</td>
                     <td>
                         <div class="events-cell">
-                            <div class="event-summary" onclick="toggleEvents(${index})">
+                            <div class="event-summary" onclick="toggleEvents(${globalIndex})">
                                 <span class="event-count">${location.events.length} Events</span>
                                 <span class="toggle-icon">▼</span>
                             </div>
-                            <div class="event-details" id="events-${index}" style="display: none;">
+                            <div class="event-details" id="events-${globalIndex}" style="display: none;">
                                 ${sortedEvents.map(event => {
                                     const startDate = parseGermanDate(event.start_date);
                                     const endDate = parseGermanDate(event.end_date);
@@ -555,6 +593,74 @@
                     </td>
                 `;
             });
+        }
+
+        // Pagination-Funktionen
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                displayAnalysisResults();
+            }
+        }
+
+        function generatePageNumbers(totalPages) {
+            const pageNumbersContainer = document.getElementById('pageNumbers');
+            pageNumbersContainer.innerHTML = '';
+
+            // Berechne Seitenbereich anzuzeigen (max 5 Seiten um die aktuelle Seite)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            // Anpassen wenn wir am Anfang oder Ende sind
+            if (endPage - startPage < 4) {
+                if (startPage === 1) {
+                    endPage = Math.min(totalPages, startPage + 4);
+                } else if (endPage === totalPages) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+            }
+
+            // Erste Seite Button (falls nicht im Bereich)
+            if (startPage > 1) {
+                const firstButton = document.createElement('button');
+                firstButton.textContent = '1';
+                firstButton.className = currentPage === 1 ? 'page-btn active' : 'page-btn';
+                firstButton.onclick = () => goToPage(1);
+                pageNumbersContainer.appendChild(firstButton);
+
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.textContent = '...';
+                    dots.className = 'page-dots';
+                    pageNumbersContainer.appendChild(dots);
+                }
+            }
+
+            // Seiten-Buttons im Bereich
+            for (let i = startPage; i <= endPage; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.className = currentPage === i ? 'page-btn active' : 'page-btn';
+                button.onclick = () => goToPage(i);
+                pageNumbersContainer.appendChild(button);
+            }
+
+            // Letzte Seite Button (falls nicht im Bereich)
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.textContent = '...';
+                    dots.className = 'page-dots';
+                    pageNumbersContainer.appendChild(dots);
+                }
+
+                const lastButton = document.createElement('button');
+                lastButton.textContent = totalPages;
+                lastButton.className = currentPage === totalPages ? 'page-btn active' : 'page-btn';
+                lastButton.onclick = () => goToPage(totalPages);
+                pageNumbersContainer.appendChild(lastButton);
+            }
         }
 
         // Empfehlungs-Text generieren
@@ -720,8 +826,12 @@
                 }
             });
 
+            // Gefilterte Ergebnisse setzen und zur ersten Seite gehen
+            filteredResults = filtered;
+            currentPage = 1;
+
             // Gefilterte Ergebnisse anzeigen
-            displayFilteredResults(filtered);
+            displayAnalysisResults();
         }
 
         // Events ein-/ausklappen
