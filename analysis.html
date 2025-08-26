@@ -536,6 +536,31 @@
             }).format(amount);
         }
 
+        // Datumsbereich formatieren
+        function formatDateRange(startDate, endDate) {
+            if (!startDate || !endDate) return 'Datum unbekannt';
+
+            try {
+                const start = startDate.toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+                const end = endDate.toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+
+                if (start === end) {
+                    return start; // Ein-Tag Event
+                } else {
+                    return `${start} - ${end}`;
+                }
+            } catch (error) {
+                console.warn('Fehler beim Formatieren des Datumsbereichs:', error);
+                return 'Datum-Fehler';
+            }
+        }
+
         // Detaillierte Empfehlungen anzeigen
         function displayDetailedRecommendations() {
             const container = document.getElementById('recommendationsContent');
