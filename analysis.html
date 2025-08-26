@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Camera Management - Location Analysis</title>
+    <title>AI Camera Management - Analyse</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,45 +43,47 @@
         </nav>
 
         <main class="dashboard-content">
-            <h2>Camera Location Analysis</h2>
+                        <h2>Standort Analyse - KI Kamera vs. Kameramann</h2>
 
             <!-- Kosten-Parameter Übersicht -->
             <div class="cost-overview">
                 <div class="cost-parameters">
-                    <h3>Cost Parameters</h3>
-                    <div class="cost-grid">
-                        <div class="cost-item">
-                            <h4>Camera Operator</h4>
+                    <h3>Kostenvergleich pro Tag (bei gleichbleibender Auslastung)</h3>
+                    <div class="cost-grid-4">
+                        <div class="cost-item operator">
+                            <h4>🎬 Kameramann</h4>
                             <div class="cost-breakdown">
-                                <span>Europe: €400/day</span>
-                                <span>USA: €250/day</span>
+                                <span class="cost-main">€400/Tag</span>
+                                <span class="cost-region">Europa</span>
+                                <span class="cost-main usa">€250/Tag</span>
+                                <span class="cost-region">USA</span>
                             </div>
                         </div>
-                        <div class="cost-item">
-                            <h4>K2 Camera System</h4>
+                        <div class="cost-item k2">
+                            <h4>🤖 K2 System</h4>
                             <div class="cost-breakdown">
-                                <span>Camera: €3,600</span>
-                                <span>Base Box: €2,500</span>
-                                <span><strong>Total: €6,100</strong></span>
-                                <span class="small-text">4-year lifetime</span>
+                                <span class="cost-main">€6.100</span>
+                                <span class="cost-detail">Gesamtkosten (4 Jahre)</span>
+                                <span class="cost-dynamic" id="k2-daily-cost">-</span>
+                                <span class="cost-detail">pro Tag (abhängig von Auslastung)</span>
                             </div>
                         </div>
-                        <div class="cost-item">
-                            <h4>N6 Camera System</h4>
+                        <div class="cost-item n6">
+                            <h4>🚀 N6 System</h4>
                             <div class="cost-breakdown">
-                                <span>Camera: €13,000</span>
-                                <span>Server: €2,500</span>
-                                <span><strong>Total: €15,500</strong></span>
-                                <span class="small-text">4-year lifetime</span>
+                                <span class="cost-main">€15.500</span>
+                                <span class="cost-detail">Gesamtkosten (4 Jahre)</span>
+                                <span class="cost-dynamic" id="n6-daily-cost">-</span>
+                                <span class="cost-detail">pro Tag (abhängig von Auslastung)</span>
                             </div>
                         </div>
-                        <div class="cost-item">
-                            <h4>N8 Camera System</h4>
+                        <div class="cost-item n8">
+                            <h4>⚡ N8 System</h4>
                             <div class="cost-breakdown">
-                                <span>Camera: €22,000</span>
-                                <span>Server: €2,500</span>
-                                <span><strong>Total: €24,500</strong></span>
-                                <span class="small-text">4-year lifetime</span>
+                                <span class="cost-main">€24.500</span>
+                                <span class="cost-detail">Gesamtkosten (4 Jahre)</span>
+                                <span class="cost-dynamic" id="n8-daily-cost">-</span>
+                                <span class="cost-detail">pro Tag (abhängig von Auslastung)</span>
                             </div>
                         </div>
                     </div>
@@ -207,7 +209,9 @@
                 k2: 6100,     // € Gesamtsystem (4 Jahre)
                 n6: 15500,    // € Gesamtsystem (4 Jahre)
                 n8: 24500     // € Gesamtsystem (4 Jahre)
-            }
+            },
+            // Annahme: gleiche jährliche Auslastung wie aktuelles Jahr
+            annualDaysAssumption: 365  // Tage pro Jahr für Durchschnittsberechnung
         };
 
         // Event-Daten laden und analysieren
@@ -270,8 +274,11 @@
                 return analyzeLocationCosts(location);
             });
 
-            // Nach Events sortieren (Standard)
-            analysisResults.sort((a, b) => b.events - a.events);
+            // Nach Produktionstagen sortieren (Rentabilität - Standard)
+            analysisResults.sort((a, b) => b.totalDays - a.totalDays);
+
+            // Dynamische Tageskosten basierend auf Gesamtauslastung berechnen
+            updateDynamicCosts();
 
             // Ergebnisse anzeigen
             displayAnalysisResults();
@@ -334,66 +341,92 @@
             const operatorCostPerDay = COSTS.operator[region] || COSTS.operator.europe;
             const totalOperatorCost = location.totalDays * operatorCostPerDay;
 
-            // Jährliche Kosten berechnen (basierend auf 4 Jahren Gesamtlaufzeit)
-            const annualOperatorCost = totalOperatorCost / 4;
+            // Annahme: gleiche jährliche Auslastung wie aktuelles Jahr
+            const annualProductionDays = location.totalDays;
+            const annualOperatorCost = annualProductionDays * operatorCostPerDay;
 
-            // Für jedes System die Einsparungen berechnen
+            // Für jedes System die tatsächlichen Tageskosten berechnen
             const systems = [
                 {
                     name: 'K2',
                     totalCost: COSTS.systems.k2,
-                    annualCost: COSTS.systems.k2 / 4,
+                    dailyCost: COSTS.systems.k2 / (annualProductionDays * 4), // Tageskosten über 4 Jahre
                     description: 'K2 Camera System'
                 },
                 {
                     name: 'N6',
                     totalCost: COSTS.systems.n6,
-                    annualCost: COSTS.systems.n6 / 4,
+                    dailyCost: COSTS.systems.n6 / (annualProductionDays * 4), // Tageskosten über 4 Jahre
                     description: 'N6 Camera System'
                 },
                 {
                     name: 'N8',
                     totalCost: COSTS.systems.n8,
-                    annualCost: COSTS.systems.n8 / 4,
+                    dailyCost: COSTS.systems.n8 / (annualProductionDays * 4), // Tageskosten über 4 Jahre
                     description: 'N8 Camera System'
                 }
             ];
 
-            // Beste Empfehlung finden
+            // Beste Empfehlung finden (basierend auf täglichen Einsparungen)
             let bestSystem = null;
-            let maxSavings = 0;
+            let maxDailySavings = 0;
             let roiPeriod = 999;
 
             systems.forEach(system => {
-                const annualSavings = annualOperatorCost - system.annualCost;
+                const dailySavings = operatorCostPerDay - system.dailyCost;
 
-                if (annualSavings > maxSavings) {
-                    maxSavings = annualSavings;
+                if (dailySavings > maxDailySavings) {
+                    maxDailySavings = dailySavings;
                     bestSystem = system;
-                    roiPeriod = system.totalCost / (annualOperatorCost - system.annualCost);
+                    // ROI in Jahren: Gesamtkosten / jährliche Einsparungen
+                    const annualSavings = dailySavings * annualProductionDays;
+                    roiPeriod = system.totalCost / Math.max(0.01, annualSavings);
                 }
             });
 
-            // Priorität basierend auf Einsparungen
+            // Priorität basierend auf täglichen Einsparungen
             let priority = 'low';
-            if (maxSavings > 10000) priority = 'high';
-            else if (maxSavings > 5000) priority = 'medium';
+            if (maxDailySavings > 100) priority = 'high';
+            else if (maxDailySavings > 50) priority = 'medium';
 
             return {
                 ...location,
                 operatorCostPerDay: operatorCostPerDay,
                 totalOperatorCost: totalOperatorCost,
                 annualOperatorCost: annualOperatorCost,
+                annualProductionDays: annualProductionDays,
                 bestSystem: bestSystem,
-                maxSavings: maxSavings,
+                maxDailySavings: maxDailySavings,
+                maxAnnualSavings: maxDailySavings * annualProductionDays,
                 roiPeriod: roiPeriod,
                 priority: priority,
-                systems: systems.map(system => ({
-                    ...system,
-                    annualSavings: annualOperatorCost - system.annualCost,
-                    roiPeriod: system.totalCost / Math.max(0.01, annualOperatorCost - system.annualCost)
-                }))
+                systems: systems.map(system => {
+                    const dailySavings = operatorCostPerDay - system.dailyCost;
+                    const annualSavings = dailySavings * annualProductionDays;
+                    return {
+                        ...system,
+                        dailySavings: dailySavings,
+                        annualSavings: annualSavings,
+                        roiPeriod: system.totalCost / Math.max(0.01, annualSavings)
+                    };
+                })
             };
+        }
+
+        // Dynamische Tageskosten aktualisieren
+        function updateDynamicCosts() {
+            // Gesamte jährliche Produktionstage aller Standorte berechnen
+            const totalAnnualDays = analysisResults.reduce((sum, loc) => sum + loc.annualProductionDays, 0);
+
+            if (totalAnnualDays > 0) {
+                const k2DailyCost = COSTS.systems.k2 / (totalAnnualDays * 4);
+                const n6DailyCost = COSTS.systems.n6 / (totalAnnualDays * 4);
+                const n8DailyCost = COSTS.systems.n8 / (totalAnnualDays * 4);
+
+                document.getElementById('k2-daily-cost').textContent = `€${k2DailyCost.toFixed(0)}/Tag`;
+                document.getElementById('n6-daily-cost').textContent = `€${n6DailyCost.toFixed(0)}/Tag`;
+                document.getElementById('n8-daily-cost').textContent = `€${n8DailyCost.toFixed(0)}/Tag`;
+            }
         }
 
         // Analyse-Ergebnisse anzeigen
@@ -405,7 +438,7 @@
             const totalLocations = analysisResults.length;
             const totalEvents = analysisResults.reduce((sum, loc) => sum + loc.events, 0);
             const totalDays = analysisResults.reduce((sum, loc) => sum + loc.totalDays, 0);
-            const potentialSavings = analysisResults.reduce((sum, loc) => sum + (loc.maxSavings || 0), 0);
+            const potentialSavings = analysisResults.reduce((sum, loc) => sum + (loc.maxAnnualSavings || 0), 0);
 
             document.getElementById('totalLocations').textContent = totalLocations;
             document.getElementById('totalEvents').textContent = totalEvents;
@@ -423,14 +456,14 @@
                     <td>${location.country}</td>
                     <td>${location.events}</td>
                     <td>${location.totalDays}</td>
-                    <td>${formatCurrency(location.annualOperatorCost)}</td>
+                    <td>${formatCurrency(location.operatorCostPerDay)}/Tag</td>
                     <td>
                         <span class="system-badge ${location.bestSystem ? location.bestSystem.name.toLowerCase() : ''}">
                             ${location.bestSystem ? location.bestSystem.name : 'None'}
                         </span>
                     </td>
-                    <td class="savings ${priorityClass}">${formatCurrency(location.maxSavings)}</td>
-                    <td>${location.roiPeriod < 10 ? location.roiPeriod.toFixed(1) + ' years' : '>10 years'}</td>
+                    <td class="savings ${priorityClass}">€${location.maxDailySavings.toFixed(0)}/Tag</td>
+                    <td>${location.roiPeriod < 10 ? location.roiPeriod.toFixed(1) + ' Jahre' : '>10 Jahre'}</td>
                     <td class="recommendation ${priorityClass}">${recommendation}</td>
                 `;
             });
@@ -438,19 +471,21 @@
 
         // Empfehlungs-Text generieren
         function getRecommendationText(location) {
-            if (!location.bestSystem || location.maxSavings <= 0) {
-                return 'Camera operator more cost-effective';
+            if (!location.bestSystem || location.maxDailySavings <= 0) {
+                return 'Kameramann rentabler';
             }
 
+            const dailySavings = location.maxDailySavings;
             const roiYears = location.roiPeriod;
-            if (roiYears < 1) {
-                return `Excellent ROI - ${location.bestSystem.name} immediately profitable`;
-            } else if (roiYears < 2) {
-                return `Very good ROI - ${location.bestSystem.name} within 2 years`;
-            } else if (roiYears < 4) {
-                return `Good ROI - ${location.bestSystem.name} within 4 years`;
+
+            if (dailySavings > 200) {
+                return `Exzellente Einsparung - ${location.bestSystem.name} sofort rentabel`;
+            } else if (dailySavings > 100) {
+                return `Sehr gute Einsparung - ${location.bestSystem.name} innerhalb 2 Jahren`;
+            } else if (dailySavings > 50) {
+                return `Gute Einsparung - ${location.bestSystem.name} innerhalb 4 Jahren`;
             } else {
-                return `Long-term investment - ${location.bestSystem.name}`;
+                return `Langfristige Investition - ${location.bestSystem.name}`;
             }
         }
 
@@ -564,11 +599,11 @@
                     case 'events':
                         return b.events - a.events;
                     case 'days':
-                        return b.totalDays - a.totalDays;
+                        return b.totalDays - a.totalDays; // Rentabilität
                     case 'saving':
-                        return b.maxSavings - a.maxSavings;
+                        return b.maxDailySavings - a.maxDailySavings; // Tägliche Einsparungen
                     default:
-                        return 0;
+                        return b.totalDays - a.totalDays; // Standard: nach Tagen
                 }
             });
 
@@ -592,14 +627,14 @@
                     <td>${location.country}</td>
                     <td>${location.events}</td>
                     <td>${location.totalDays}</td>
-                    <td>${formatCurrency(location.annualOperatorCost)}</td>
+                    <td>${formatCurrency(location.operatorCostPerDay)}/Tag</td>
                     <td>
                         <span class="system-badge ${location.bestSystem ? location.bestSystem.name.toLowerCase() : ''}">
                             ${location.bestSystem ? location.bestSystem.name : 'None'}
                         </span>
                     </td>
-                    <td class="savings ${priorityClass}">${formatCurrency(location.maxSavings)}</td>
-                    <td>${location.roiPeriod < 10 ? location.roiPeriod.toFixed(1) + ' years' : '>10 years'}</td>
+                    <td class="savings ${priorityClass}">€${location.maxDailySavings.toFixed(0)}/Tag</td>
+                    <td>${location.roiPeriod < 10 ? location.roiPeriod.toFixed(1) + ' Jahre' : '>10 Jahre'}</td>
                     <td class="recommendation ${priorityClass}">${recommendation}</td>
                 `;
             });
@@ -608,7 +643,7 @@
             const totalLocations = filtered.length;
             const totalEvents = filtered.reduce((sum, loc) => sum + loc.events, 0);
             const totalDays = filtered.reduce((sum, loc) => sum + loc.totalDays, 0);
-            const potentialSavings = filtered.reduce((sum, loc) => sum + (loc.maxSavings || 0), 0);
+            const potentialSavings = filtered.reduce((sum, loc) => sum + (loc.maxAnnualSavings || 0), 0);
 
             document.getElementById('totalLocations').textContent = totalLocations;
             document.getElementById('totalEvents').textContent = totalEvents;

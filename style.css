@@ -2826,6 +2826,12 @@ body {
     font-weight: 700;
 }
 
+.cost-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
 .cost-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -2844,6 +2850,57 @@ body {
     margin-bottom: 1rem;
     font-size: 1.2rem;
     font-weight: 700;
+}
+
+/* Spezielle Styles für verschiedene Kosten-Kategorien */
+.cost-item.operator {
+    background: linear-gradient(135deg, rgba(179, 9, 24, 0.1) 0%, rgba(179, 9, 24, 0.05) 100%);
+    border: 1px solid rgba(179, 9, 24, 0.3);
+}
+
+.cost-item.k2 {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.cost-item.n6 {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.cost-item.n8 {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(156, 39, 176, 0.05) 100%);
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+.cost-main {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #B30918;
+}
+
+.cost-main.usa {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.cost-region {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 0.25rem;
+}
+
+.cost-detail {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.25rem;
+}
+
+.cost-dynamic {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #4CAF50;
+    margin-top: 0.5rem;
 }
 
 .cost-breakdown {
@@ -3241,6 +3298,10 @@ body {
 
 /* Responsive Analysis */
 @media (max-width: 1200px) {
+    .cost-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     .cost-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -3258,6 +3319,10 @@ body {
 
     .control-group {
         width: 100%;
+    }
+
+    .cost-grid-4 {
+        grid-template-columns: 1fr;
     }
 
     .cost-grid {
