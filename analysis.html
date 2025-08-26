@@ -185,7 +185,7 @@
             <!-- Analyse-Ergebnisse -->
             <div id="analysisResults" class="analysis-results" style="display: none;">
                 <div class="analysis-summary">
-                    <h3>Standort Analyse - Übersicht</h3>
+                    <h3>📊 Standort Analyse - Übersicht</h3>
                     <div class="summary-stats">
                         <div class="summary-item">
                             <span class="summary-label">Standorte gesamt:</span>
@@ -214,9 +214,8 @@
                                 <th>Land</th>
                                 <th>Veranstaltungen</th>
                                 <th>Gesamt Tage</th>
-                                <th>Kameramann Gesamtkosten</th>
-                                <th>KI-System Tageskosten</th>
-                                <th>Empfehlung</th>
+                                <th>🎬 Kameramann</th>
+                                <th>🤖 KI-Systeme</th>
                             </tr>
                         </thead>
                         <tbody id="locationAnalysisBody">
@@ -833,24 +832,40 @@
                         </div>
                     </td>
                     <td><strong>${location.totalDays} Tage</strong></td>
-                    <td class="operator-cost">${formatCurrency(totalOperatorCost)}</td>
-                    <td>
-                        <div class="system-costs">
-                            <div class="system-cost k2-cost disabled">
-                                K2: €${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag
-                            </div>
-                            <div class="system-cost n6-cost">
-                                N6: €${n6DailyCost.toFixed(0)}/Tag
-                            </div>
-                            <div class="system-cost n8-cost">
-                                N8: €${n8DailyCost.toFixed(0)}/Tag
+                    <td class="operator-cost">
+                        <div class="cost-display">
+                            <div class="cost-icon">🎬</div>
+                            <div class="cost-details">
+                                <div class="cost-name">Kameramann</div>
+                                <div class="cost-value">${formatCurrency(totalOperatorCost)}</div>
+                                <div class="cost-daily">${formatCurrency(location.operatorCostPerDay)}/Tag</div>
                             </div>
                         </div>
                     </td>
-                    <td class="recommendation-cell ${priorityClass}">
-                        <div class="recommendation-badge">${location.bestSystem ? location.bestSystem.name : 'Kameramann'}</div>
-                        <div class="recommendation-text">${recommendation}</div>
-                        <div class="savings-info">€${location.maxDailySavings.toFixed(0)}/Tag Ersparnis</div>
+                    <td class="systems-cost">
+                        <div class="systems-grid">
+                            <div class="system-item k2-item">
+                                <img src="https://via.placeholder.com/40x40/666666/ffffff?text=K2" alt="K2 Camera" class="system-icon">
+                                <div class="system-info">
+                                    <div class="system-name">K2</div>
+                                    <div class="system-cost">€${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag</div>
+                                </div>
+                            </div>
+                            <div class="system-item n6-item">
+                                <img src="https://via.placeholder.com/40x40/FF9800/ffffff?text=N6" alt="N6 Camera" class="system-icon">
+                                <div class="system-info">
+                                    <div class="system-name">N6</div>
+                                    <div class="system-cost">€${n6DailyCost.toFixed(0)}/Tag</div>
+                                </div>
+                            </div>
+                            <div class="system-item n8-item">
+                                <img src="https://via.placeholder.com/40x40/9C27B0/ffffff?text=N8" alt="N8 Camera" class="system-icon">
+                                <div class="system-info">
+                                    <div class="system-name">N8</div>
+                                    <div class="system-cost">€${n8DailyCost.toFixed(0)}/Tag</div>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 `;
             });
