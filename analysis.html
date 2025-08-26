@@ -90,29 +90,92 @@
                 </div>
             </div>
 
-            <!-- Filter und Steuerung -->
-            <div class="analysis-controls">
-                <div class="control-group">
-                    <label for="regionFilter">Region:</label>
-                    <select id="regionFilter" onchange="applyFilters()">
-                        <option value="all">All Regions</option>
-                        <option value="europe">Europe</option>
-                        <option value="usa">USA</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="minEvents">Min Events:</label>
-                    <input type="number" id="minEvents" value="1" min="1" onchange="applyFilters()">
-                </div>
-                <div class="control-group">
-                    <label for="sortBy">Sort by:</label>
-                    <select id="sortBy" onchange="applyFilters()">
-                        <option value="events">Total Events</option>
-                        <option value="days">Production Days</option>
-                        <option value="saving">Potential Savings</option>
-                    </select>
-                </div>
-            </div>
+            <!-- Haupt-Layout: Sidebar + Content -->
+            <div class="analysis-layout">
+                <!-- Sidebar mit Filtern -->
+                <aside class="analysis-sidebar">
+                    <div class="sidebar-header">
+                        <h3>🔍 Filteroptionen</h3>
+                        <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle">
+                            <span class="toggle-icon">◀</span>
+                        </button>
+                    </div>
+
+                    <div class="sidebar-content">
+                        <!-- Region Filter -->
+                        <div class="filter-group">
+                            <label>Region:</label>
+                            <select id="regionFilter" onchange="applyFilters()">
+                                <option value="all">Alle Regionen</option>
+                                <option value="europe">Europa</option>
+                                <option value="usa">USA</option>
+                            </select>
+                        </div>
+
+                        <!-- Land Filter -->
+                        <div class="filter-group">
+                            <label>Land:</label>
+                            <select id="countryFilter" onchange="applyFilters()">
+                                <option value="all">Alle Länder</option>
+                                <!-- Wird dynamisch gefüllt -->
+                            </select>
+                        </div>
+
+                        <!-- Event Manager Filter -->
+                        <div class="filter-group">
+                            <label>Event Manager:</label>
+                            <select id="eventManagerFilter" onchange="applyFilters()">
+                                <option value="all">Alle Manager</option>
+                                <!-- Wird dynamisch gefüllt -->
+                            </select>
+                        </div>
+
+                        <!-- Mindestanzahl Events -->
+                        <div class="filter-group">
+                            <label for="minEvents">Min. Events:</label>
+                            <input type="number" id="minEvents" value="1" min="1" onchange="applyFilters()">
+                        </div>
+
+                        <!-- Mindestanzahl Tage -->
+                        <div class="filter-group">
+                            <label for="minDays">Min. Tage:</label>
+                            <input type="number" id="minDays" value="1" min="1" onchange="applyFilters()">
+                        </div>
+
+                        <!-- Sortierung -->
+                        <div class="filter-group">
+                            <label for="sortBy">Sortierung:</label>
+                            <select id="sortBy" onchange="applyFilters()">
+                                <option value="days">Tage (Rentabilität)</option>
+                                <option value="events">Events Anzahl</option>
+                                <option value="saving">Einsparungen</option>
+                                <option value="location">Standort (A-Z)</option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Buttons -->
+                        <div class="filter-buttons">
+                            <button class="btn-apply" onclick="applyFilters()">Filter anwenden</button>
+                            <button class="btn-reset" onclick="resetFilters()">Filter zurücksetzen</button>
+                        </div>
+
+                        <!-- Aktuelle Filter-Anzeige -->
+                        <div class="active-filters" id="activeFilters">
+                            <!-- Wird dynamisch gefüllt -->
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Hauptinhalt -->
+                <main class="analysis-content">
+                    <!-- Pagination Info -->
+                    <div class="pagination-info" id="paginationInfo" style="display: none;">
+                        <span id="pageInfo">Seite 1 von 1</span>
+                        <div class="pagination-controls">
+                            <button id="prevPage" onclick="changePage(-1)" disabled>◀ Vorherige</button>
+                            <button id="nextPage" onclick="changePage(1)">Nächste ▶</button>
+                        </div>
+                    </div>
 
             <!-- Lade-Indikator -->
             <div id="loadingIndicator" class="loading-indicator" style="display: none;">
@@ -161,6 +224,7 @@
                         </tbody>
                     </table>
                 </div>
+                </main>
             </div>
 
             <!-- Detaillierte Empfehlungen -->
@@ -196,6 +260,9 @@
         // Globale Variablen
         let eventsData = [];
         let analysisResults = [];
+        let filteredResults = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
         // Kosten-Konstanten
         const COSTS = {
@@ -227,6 +294,7 @@
                 eventsData = data.events || [];
 
                 console.log(`📊 Loaded ${eventsData.length} events for analysis`);
+                console.log('Sample event:', eventsData[0]);
 
                 // Daten analysieren
                 await analyzeLocations();
@@ -258,14 +326,23 @@
                     };
                 }
 
-                locationGroups[location].events.push(event);
+                // Event kopieren um es zu erweitern
+                const eventWithDays = {
+                    ...event,
+                    days: calculateEventDays(event.start_date, event.end_date)
+                };
 
-                // Produktionstage berechnen
-                const days = calculateEventDays(event.start_date, event.end_date);
-                locationGroups[location].totalDays += days;
+                locationGroups[location].events.push(eventWithDays);
+                locationGroups[location].totalDays += eventWithDays.days;
             });
 
             console.log(`🔍 Found ${Object.keys(locationGroups).length} unique locations`);
+
+            // Debug: Erstes paar Locations zeigen
+            const locationKeys = Object.keys(locationGroups);
+            if (locationKeys.length > 0) {
+                console.log('Sample location data:', locationGroups[locationKeys[0]]);
+            }
 
             // Kostenanalyse für jeden Standort
             analysisResults = Object.values(locationGroups).map(location => {
@@ -277,6 +354,12 @@
 
             // Dynamische Tageskosten basierend auf Gesamtauslastung berechnen
             updateDynamicCosts();
+
+            // Filter-Dropdowns füllen
+            populateFilterDropdowns();
+
+            // Gefilterte Ergebnisse initial setzen
+            filteredResults = [...analysisResults];
 
             // Ergebnisse anzeigen
             displayAnalysisResults();
@@ -434,7 +517,7 @@
 
             // Summary aktualisieren
             const totalLocations = analysisResults.length;
-            const totalEvents = analysisResults.reduce((sum, loc) => sum + loc.events, 0);
+            const totalEvents = analysisResults.reduce((sum, loc) => sum + loc.events.length, 0);
             const totalDays = analysisResults.reduce((sum, loc) => sum + loc.totalDays, 0);
             const potentialSavings = analysisResults.reduce((sum, loc) => sum + (loc.maxAnnualSavings || 0), 0);
 
@@ -451,12 +534,11 @@
                 const priorityClass = `priority-${location.priority}`;
 
                 // Events für diesen Standort sortieren nach Datum
-                const sortedEvents = location.events.sort((a, b) => new Date(a['Start-Date']) - new Date(b['Start-Date']));
-
-                // Event-Details für kompakte Darstellung vorbereiten
-                const eventSummary = sortedEvents.length > 1
-                    ? `${sortedEvents[0].name} (${formatDateRange(new Date(sortedEvents[0]['Start-Date']), new Date(sortedEvents[0]['End-Date']))}) +${sortedEvents.length - 1} weitere`
-                    : `${sortedEvents[0].name} (${formatDateRange(new Date(sortedEvents[0]['Start-Date']), new Date(sortedEvents[0]['End-Date']))})`;
+                const sortedEvents = location.events.sort((a, b) => {
+                    const dateA = parseGermanDate(a.start_date);
+                    const dateB = parseGermanDate(b.start_date);
+                    return dateA - dateB;
+                });
 
                 // Kameramann Gesamtkosten für alle Events
                 const totalOperatorCost = location.totalDays * location.operatorCostPerDay;
@@ -471,16 +553,20 @@
                     <td>
                         <div class="events-cell">
                             <div class="event-summary" onclick="toggleEvents(${index})">
-                                <span class="event-count">${location.events} Events</span>
+                                <span class="event-count">${location.events.length} Events</span>
                                 <span class="toggle-icon">▼</span>
                             </div>
                             <div class="event-details" id="events-${index}" style="display: none;">
-                                ${sortedEvents.map(event => `
-                                    <div class="event-item">
-                                        <strong>${event.name}</strong><br>
-                                        <small>${formatDateRange(new Date(event['Start-Date']), new Date(event['End-Date']))} (${calculateEventDays(event['Start-Date'], event['End-Date'])} Tage)</small>
-                                    </div>
-                                `).join('')}
+                                ${sortedEvents.map(event => {
+                                    const startDate = parseGermanDate(event.start_date);
+                                    const endDate = parseGermanDate(event.end_date);
+                                    return `
+                                        <div class="event-item">
+                                            <strong>${event.name}</strong><br>
+                                            <small>${formatDateRange(startDate, endDate)} (${event.days} Tage)</small>
+                                        </div>
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
                     </td>
@@ -694,15 +780,27 @@
             const tbody = document.getElementById('locationAnalysisBody');
             tbody.innerHTML = '';
 
-            filtered.forEach((location, index) => {
+            // Berechne die Indizes für die aktuelle Seite
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = filtered.slice(startIndex, endIndex);
+
+            pageItems.forEach((location, arrayIndex) => {
                 const row = tbody.insertRow();
                 row.className = 'location-row';
+
+                // Verwende den globalen Index für die Event-IDs
+                const globalIndex = startIndex + arrayIndex;
 
                 const recommendation = getRecommendationText(location);
                 const priorityClass = `priority-${location.priority}`;
 
                 // Events für diesen Standort sortieren nach Datum
-                const sortedEvents = location.events.sort((a, b) => new Date(a['Start-Date']) - new Date(b['Start-Date']));
+                const sortedEvents = location.events.sort((a, b) => {
+                    const dateA = parseGermanDate(a.start_date);
+                    const dateB = parseGermanDate(b.start_date);
+                    return dateA - dateB;
+                });
 
                 // Kameramann Gesamtkosten für alle Events
                 const totalOperatorCost = location.totalDays * location.operatorCostPerDay;
@@ -716,17 +814,21 @@
                     <td>${location.country}</td>
                     <td>
                         <div class="events-cell">
-                            <div class="event-summary" onclick="toggleEvents(${index})">
-                                <span class="event-count">${location.events} Events</span>
+                            <div class="event-summary" onclick="toggleEvents(${globalIndex})">
+                                <span class="event-count">${location.events.length} Events</span>
                                 <span class="toggle-icon">▼</span>
                             </div>
-                            <div class="event-details" id="events-${index}" style="display: none;">
-                                ${sortedEvents.map(event => `
-                                    <div class="event-item">
-                                        <strong>${event.name}</strong><br>
-                                        <small>${formatDateRange(new Date(event['Start-Date']), new Date(event['End-Date']))} (${calculateEventDays(event['Start-Date'], event['End-Date'])} Tage)</small>
-                                    </div>
-                                `).join('')}
+                            <div class="event-details" id="events-${globalIndex}" style="display: none;">
+                                ${sortedEvents.map(event => {
+                                    const startDate = parseGermanDate(event.start_date);
+                                    const endDate = parseGermanDate(event.end_date);
+                                    return `
+                                        <div class="event-item">
+                                            <strong>${event.name}</strong><br>
+                                            <small>${formatDateRange(startDate, endDate)} (${event.days} Tage)</small>
+                                        </div>
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
                     </td>
@@ -755,7 +857,7 @@
 
             // Summary für gefilterte Ergebnisse aktualisieren
             const totalLocations = filtered.length;
-            const totalEvents = filtered.reduce((sum, loc) => sum + loc.events, 0);
+            const totalEvents = filtered.reduce((sum, loc) => sum + loc.events.length, 0);
             const totalDays = filtered.reduce((sum, loc) => sum + loc.totalDays, 0);
             const potentialSavings = filtered.reduce((sum, loc) => sum + (loc.maxAnnualSavings || 0), 0);
 
@@ -763,6 +865,193 @@
             document.getElementById('totalEvents').textContent = totalEvents;
             document.getElementById('totalDays').textContent = totalDays;
             document.getElementById('potentialSavings').textContent = formatCurrency(potentialSavings);
+        }
+
+        // Filter-Dropdowns füllen
+        function populateFilterDropdowns() {
+            // Länder sammeln
+            const countries = new Set();
+            const eventManagers = new Set();
+
+            analysisResults.forEach(location => {
+                countries.add(location.country);
+                // Event Manager aus den Events sammeln
+                location.events.forEach(event => {
+                    if (event.event_manager) {
+                        eventManagers.add(event.event_manager);
+                    }
+                });
+            });
+
+            // Länder-Dropdown füllen
+            const countrySelect = document.getElementById('countryFilter');
+            Array.from(countries).sort().forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countrySelect.appendChild(option);
+            });
+
+            // Event Manager-Dropdown füllen
+            const managerSelect = document.getElementById('eventManagerFilter');
+            Array.from(eventManagers).sort().forEach(manager => {
+                const option = document.createElement('option');
+                option.value = manager;
+                option.textContent = manager;
+                managerSelect.appendChild(option);
+            });
+        }
+
+        // Sidebar ein-/ausklappen
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.analysis-sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                toggleIcon.textContent = '▶';
+            } else {
+                toggleIcon.textContent = '◀';
+            }
+        }
+
+        // Erweiterte Filter anwenden
+        function applyFilters() {
+            const regionFilter = document.getElementById('regionFilter').value;
+            const countryFilter = document.getElementById('countryFilter').value;
+            const eventManagerFilter = document.getElementById('eventManagerFilter').value;
+            const minEvents = parseInt(document.getElementById('minEvents').value) || 1;
+            const minDays = parseInt(document.getElementById('minDays').value) || 1;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filtered = analysisResults.filter(location => {
+                // Region-Filter
+                if (regionFilter !== 'all' && location.region !== regionFilter) {
+                    return false;
+                }
+
+                // Land-Filter
+                if (countryFilter !== 'all' && location.country !== countryFilter) {
+                    return false;
+                }
+
+                // Event Manager-Filter
+                if (eventManagerFilter !== 'all') {
+                    const hasManager = location.events.some(event => event.event_manager === eventManagerFilter);
+                    if (!hasManager) return false;
+                }
+
+                // Mindestanzahl Events
+                if (location.events.length < minEvents) {
+                    return false;
+                }
+
+                // Mindestanzahl Tage
+                if (location.totalDays < minDays) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Sortierung
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'events':
+                        return b.events.length - a.events.length;
+                    case 'days':
+                        return b.totalDays - a.totalDays;
+                    case 'saving':
+                        return b.maxDailySavings - a.maxDailySavings;
+                    case 'location':
+                        return a.location.localeCompare(b.location);
+                    default:
+                        return b.totalDays - a.totalDays;
+                }
+            });
+
+            // Gefilterte Ergebnisse setzen und erste Seite anzeigen
+            filteredResults = filtered;
+            currentPage = 1;
+            displayFilteredResults(filtered);
+            updatePagination();
+            updateActiveFiltersDisplay();
+        }
+
+        // Filter zurücksetzen
+        function resetFilters() {
+            document.getElementById('regionFilter').value = 'all';
+            document.getElementById('countryFilter').value = 'all';
+            document.getElementById('eventManagerFilter').value = 'all';
+            document.getElementById('minEvents').value = '1';
+            document.getElementById('minDays').value = '1';
+            document.getElementById('sortBy').value = 'days';
+
+            filteredResults = [...analysisResults];
+            currentPage = 1;
+            displayFilteredResults(filteredResults);
+            updatePagination();
+            updateActiveFiltersDisplay();
+        }
+
+        // Seite wechseln
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
+            currentPage += direction;
+
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            displayFilteredResults(filteredResults);
+            updatePagination();
+        }
+
+        // Pagination aktualisieren
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
+            const pageInfo = document.getElementById('pageInfo');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+
+            if (totalPages > 1) {
+                pageInfo.textContent = `Seite ${currentPage} von ${totalPages}`;
+                paginationInfo.style.display = 'flex';
+
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = currentPage === totalPages;
+            } else {
+                paginationInfo.style.display = 'none';
+            }
+        }
+
+        // Aktive Filter anzeigen
+        function updateActiveFiltersDisplay() {
+            const activeFiltersDiv = document.getElementById('activeFilters');
+            const filters = [];
+
+            const regionFilter = document.getElementById('regionFilter').value;
+            const countryFilter = document.getElementById('countryFilter').value;
+            const eventManagerFilter = document.getElementById('eventManagerFilter').value;
+            const minEvents = parseInt(document.getElementById('minEvents').value) || 1;
+            const minDays = parseInt(document.getElementById('minDays').value) || 1;
+
+            if (regionFilter !== 'all') filters.push(`Region: ${regionFilter}`);
+            if (countryFilter !== 'all') filters.push(`Land: ${countryFilter}`);
+            if (eventManagerFilter !== 'all') filters.push(`Manager: ${eventManagerFilter}`);
+            if (minEvents > 1) filters.push(`Min. Events: ${minEvents}`);
+            if (minDays > 1) filters.push(`Min. Tage: ${minDays}`);
+
+            if (filters.length > 0) {
+                activeFiltersDiv.innerHTML = `
+                    <h4>Aktive Filter:</h4>
+                    <ul>${filters.map(f => `<li>${f}</li>`).join('')}</ul>
+                `;
+            } else {
+                activeFiltersDiv.innerHTML = '<p>Keine Filter aktiv</p>';
+            }
         }
 
         // Seite initialisieren
