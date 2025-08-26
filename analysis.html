@@ -446,20 +446,31 @@
             };
         }
 
-        // Dynamische Tageskosten aktualisieren
+        // Dynamische Tageskosten aktualisieren (falls Elemente vorhanden sind)
         function updateDynamicCosts() {
-            // Gesamte jährliche Produktionstage aller Standorte berechnen
-            const totalAnnualDays = analysisResults.reduce((sum, loc) => sum + loc.annualProductionDays, 0);
+            // Diese Funktion ist nicht mehr notwendig, da die Kosten-Übersicht entfernt wurde
+            // Aber sicherstellen, dass keine Fehler auftreten, falls Elemente noch referenziert werden
 
-            if (totalAnnualDays > 0) {
-                const k2DailyCost = COSTS.systems.k2 / (totalAnnualDays * 4);
-                const n6DailyCost = COSTS.systems.n6 / (totalAnnualDays * 4);
-                const n8DailyCost = COSTS.systems.n8 / (totalAnnualDays * 4);
+            const k2Element = document.getElementById('k2-daily-cost');
+            const n6Element = document.getElementById('n6-daily-cost');
+            const n8Element = document.getElementById('n8-daily-cost');
 
-                document.getElementById('k2-daily-cost').textContent = `€${k2DailyCost.toFixed(0)}/Tag`;
-                document.getElementById('n6-daily-cost').textContent = `€${n6DailyCost.toFixed(0)}/Tag`;
-                document.getElementById('n8-daily-cost').textContent = `€${n8DailyCost.toFixed(0)}/Tag`;
+            // Nur aktualisieren, wenn die Elemente tatsächlich existieren
+            if (k2Element || n6Element || n8Element) {
+                const totalAnnualDays = analysisResults.reduce((sum, loc) => sum + loc.annualProductionDays, 0);
+
+                if (totalAnnualDays > 0) {
+                    const k2DailyCost = COSTS.systems.k2 / (totalAnnualDays * 4);
+                    const n6DailyCost = COSTS.systems.n6 / (totalAnnualDays * 4);
+                    const n8DailyCost = COSTS.systems.n8 / (totalAnnualDays * 4);
+
+                    if (k2Element) k2Element.textContent = `€${k2DailyCost.toFixed(0)}/Tag`;
+                    if (n6Element) n6Element.textContent = `€${n6DailyCost.toFixed(0)}/Tag`;
+                    if (n8Element) n8Element.textContent = `€${n8DailyCost.toFixed(0)}/Tag`;
+                }
             }
+
+            console.log('💰 Dynamic costs calculation completed - elements updated if present');
         }
 
         // Analyse-Ergebnisse anzeigen
