@@ -535,14 +535,14 @@
                     <td class="operator-cost">${formatCurrency(totalOperatorCost)}</td>
                     <td>
                         <div class="system-costs">
-                            <div class="system-cost k2-cost disabled">
-                                K2: €${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag
+                            <div class="system-cost k2-item disabled">
+                                <strong>K2:</strong> €${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag
                             </div>
-                            <div class="system-cost n6-cost">
-                                N6: €${n6DailyCost.toFixed(0)}/Tag
+                            <div class="system-cost n6-item">
+                                <strong>N6:</strong> €${n6DailyCost.toFixed(0)}/Tag
                             </div>
-                            <div class="system-cost n8-cost">
-                                N8: €${n8DailyCost.toFixed(0)}/Tag
+                            <div class="system-cost n8-item">
+                                <strong>N8:</strong> €${n8DailyCost.toFixed(0)}/Tag
                             </div>
                         </div>
                     </td>
