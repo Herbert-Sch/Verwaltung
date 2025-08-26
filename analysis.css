@@ -912,6 +912,89 @@ body {
     width: 90%;
 }
 
+/* Storage Modal */
+.storage-modal {
+    max-width: 500px;
+    width: 90%;
+}
+
+/* Download Modal */
+.download-modal {
+    max-width: 600px;
+    width: 90%;
+}
+
+.storage-info-content {
+    text-align: left;
+}
+
+.storage-info-content ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.storage-info-content li {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.storage-info-content code {
+    background: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #B30918;
+}
+
+.storage-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+.storage-actions button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+}
+
+/* Download Modal Styles */
+.download-info-content {
+    text-align: left;
+}
+
+.download-info-content ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.download-info-content li {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.download-info-content code {
+    background: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #B30918;
+}
+
+.download-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+.download-actions button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+}
+
 .checkbox-container {
     display: flex;
     align-items: center;
