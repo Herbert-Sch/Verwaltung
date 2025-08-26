@@ -3021,6 +3021,7 @@ body {
     margin-bottom: 2rem;
     overflow-x: auto;
     width: 100%;
+    flex: 1;
 }
 
 
@@ -3099,6 +3100,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0.5rem;
 }
 
 .cost-display {
@@ -3141,12 +3143,16 @@ body {
 }
 
 /* Systems Cost Cell */
+.systems-cost {
+    padding: 0.5rem;
+}
+
 .systems-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.75rem;
     min-height: 80px;
-    padding: 0.75rem;
+    padding: 0.5rem;
 }
 
 .system-item {
@@ -3254,9 +3260,36 @@ body {
 
 .analysis-table td {
     color: #ffffff;
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 0.75rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     vertical-align: top;
+    word-wrap: break-word;
+}
+
+/* Spezifische Spalten-Breiten für bessere Darstellung */
+.analysis-table th:nth-child(1), .analysis-table td:nth-child(1) { /* Standort */
+    width: 15%;
+    min-width: 120px;
+}
+.analysis-table th:nth-child(2), .analysis-table td:nth-child(2) { /* Land */
+    width: 8%;
+    min-width: 80px;
+}
+.analysis-table th:nth-child(3), .analysis-table td:nth-child(3) { /* Veranstaltungen */
+    width: 20%;
+    min-width: 150px;
+}
+.analysis-table th:nth-child(4), .analysis-table td:nth-child(4) { /* Gesamt Tage */
+    width: 10%;
+    min-width: 100px;
+}
+.analysis-table th:nth-child(5), .analysis-table td:nth-child(5) { /* Kameramann */
+    width: 15%;
+    min-width: 140px;
+}
+.analysis-table th:nth-child(6), .analysis-table td:nth-child(6) { /* KI-Systeme */
+    width: 32%;
+    min-width: 250px;
 }
 
 .location-row {
@@ -3540,12 +3573,6 @@ body {
     top: 20px;
 }
 
-.analysis-content {
-    flex: 1;
-    min-width: 0;
-    width: 75%;
-}
-
 /* Override dashboard-content for analysis page */
 .dashboard-content {
     padding: 1rem; /* Reduced padding for analysis page */
@@ -3562,6 +3589,15 @@ body {
 
 .dashboard-content .analysis-layout .analysis-content {
     margin: 0;
+}
+
+/* Main Analysis Layout */
+.analysis-content {
+    flex: 1;
+    min-width: 0;
+    width: 75%;
+    display: flex;
+    flex-direction: column;
 }
 
 .analysis-sidebar.collapsed {
@@ -3608,10 +3644,7 @@ body {
     display: none;
 }
 
-.analysis-content {
-    flex: 1;
-    min-width: 0; /* Allow flex item to shrink */
-}
+/* Diese Definition wurde nach oben verschoben */
 
 .filter-group {
     margin-bottom: 1.5rem;

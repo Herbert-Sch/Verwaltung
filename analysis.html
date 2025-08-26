@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Camera Management - Analyse</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="analysis.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
@@ -43,62 +43,14 @@
         </nav>
 
         <main class="dashboard-content">
-                        <h2>Standort Analyse - KI Kamera vs. Kameramann</h2>
-
-            <!-- Kosten-Parameter Übersicht -->
-            <div class="cost-overview">
-                <div class="cost-parameters">
-                    <h3>Kostenvergleich pro Tag (bei gleichbleibender Auslastung)</h3>
-                    <div class="cost-grid-4">
-                        <div class="cost-item operator">
-                            <h4>🎬 Kameramann</h4>
-                            <div class="cost-breakdown">
-                                <span class="cost-main">€400/Tag</span>
-                                <span class="cost-region">Europa</span>
-                                <span class="cost-main usa">€250/Tag</span>
-                                <span class="cost-region">USA</span>
-                            </div>
-                        </div>
-                        <div class="cost-item k2">
-                            <h4>🤖 K2 System</h4>
-                            <div class="cost-breakdown">
-                                <span class="cost-main">€6.100</span>
-                                <span class="cost-detail">Gesamtkosten (4 Jahre)</span>
-                                <span class="cost-dynamic" id="k2-daily-cost">-</span>
-                                <span class="cost-detail">pro Tag (abhängig von Auslastung)</span>
-                            </div>
-                        </div>
-                        <div class="cost-item n6">
-                            <h4>🚀 N6 System</h4>
-                            <div class="cost-breakdown">
-                                <span class="cost-main">€15.500</span>
-                                <span class="cost-detail">Gesamtkosten (4 Jahre)</span>
-                                <span class="cost-dynamic" id="n6-daily-cost">-</span>
-                                <span class="cost-detail">pro Tag (abhängig von Auslastung)</span>
-                            </div>
-                        </div>
-                        <div class="cost-item n8">
-                            <h4>⚡ N8 System</h4>
-                            <div class="cost-breakdown">
-                                <span class="cost-main">€24.500</span>
-                                <span class="cost-detail">Gesamtkosten (4 Jahre)</span>
-                                <span class="cost-dynamic" id="n8-daily-cost">-</span>
-                                <span class="cost-detail">pro Tag (abhängig von Auslastung)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        <h2>Standort Analyse</h2>
 
             <!-- Haupt-Layout: Sidebar + Content -->
             <div class="analysis-layout">
                 <!-- Sidebar mit Filtern -->
                 <aside class="analysis-sidebar">
                     <div class="sidebar-header">
-                        <h3>🔍 Filteroptionen</h3>
-                        <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle">
-                            <span class="toggle-icon">◀</span>
-                        </button>
+                        <h3>Filteroptionen</h3>
                     </div>
 
                     <div class="sidebar-content">
@@ -167,7 +119,7 @@
                 </aside>
 
                 <!-- Hauptinhalt -->
-                <main class="analysis-content">
+                <div class="analysis-content">
                     <!-- Pagination Info -->
                     <div class="pagination-info" id="paginationInfo" style="display: none;">
                         <span id="pageInfo">Seite 1 von 1</span>
@@ -177,53 +129,54 @@
                         </div>
                     </div>
 
-            <!-- Lade-Indikator -->
-            <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-                <p>Analyzing event data...</p>
-            </div>
+                    <!-- Lade-Indikator -->
+                    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                        <p>Analyzing event data...</p>
+                    </div>
 
-            <!-- Analyse-Ergebnisse -->
-            <div id="analysisResults" class="analysis-results" style="display: none;">
-                <div class="analysis-summary">
-                    <h3>📊 Standort Analyse - Übersicht</h3>
-                    <div class="summary-stats">
-                        <div class="summary-item">
-                            <span class="summary-label">Standorte gesamt:</span>
-                            <span class="summary-value" id="totalLocations">-</span>
+                    <!-- Analyse-Ergebnisse -->
+                    <div id="analysisResults" class="analysis-results" style="display: none;">
+                        <div class="analysis-summary">
+                            <h3>Standort Übersicht</h3>
+                            <div class="summary-stats">
+                                <div class="summary-item">
+                                    <span class="summary-label">Standorte gesamt:</span>
+                                    <span class="summary-value" id="totalLocations">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Events gesamt:</span>
+                                    <span class="summary-value" id="totalEvents">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Produktionstage gesamt:</span>
+                                    <span class="summary-value" id="totalDays">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Potenzielle Jahreseinsparungen:</span>
+                                    <span class="summary-value" id="potentialSavings">-</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Events gesamt:</span>
-                            <span class="summary-value" id="totalEvents">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Produktionstage gesamt:</span>
-                            <span class="summary-value" id="totalDays">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Potenzielle Jahreseinsparungen:</span>
-                            <span class="summary-value" id="potentialSavings">-</span>
+
+                        <div class="analysis-table-container">
+                            <table class="analysis-table" id="locationAnalysisTable">
+                                <thead>
+                                    <tr>
+                                        <th>Standort</th>
+                                        <th>Land</th>
+                                        <th>Veranstaltungen</th>
+                                        <th>Gesamt Tage</th>
+                                        <th>🎬 Kameramann</th>
+                                        <th>🤖 KI-Systeme</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="locationAnalysisBody">
+                                    <!-- Dynamisch geladen -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-
-                <div class="analysis-table-container">
-                    <table class="analysis-table" id="locationAnalysisTable">
-                        <thead>
-                            <tr>
-                                <th>Standort</th>
-                                <th>Land</th>
-                                <th>Veranstaltungen</th>
-                                <th>Gesamt Tage</th>
-                                <th>🎬 Kameramann</th>
-                                <th>🤖 KI-Systeme</th>
-                            </tr>
-                        </thead>
-                        <tbody id="locationAnalysisBody">
-                            <!-- Dynamisch geladen -->
-                        </tbody>
-                    </table>
-                </div>
-                </main>
             </div>
 
             <!-- Detaillierte Empfehlungen -->
@@ -917,20 +870,7 @@
             });
         }
 
-        // Sidebar ein-/ausklappen
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.analysis-sidebar');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const toggleIcon = toggleBtn.querySelector('.toggle-icon');
 
-            sidebar.classList.toggle('collapsed');
-
-            if (sidebar.classList.contains('collapsed')) {
-                toggleIcon.textContent = '▶';
-            } else {
-                toggleIcon.textContent = '◀';
-            }
-        }
 
         // Erweiterte Filter anwenden
         function applyFilters() {
