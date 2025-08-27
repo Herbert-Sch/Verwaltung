@@ -683,13 +683,16 @@
                     <td>
                         <div class="system-costs">
                             <div class="system-cost k2-item disabled">
-                                <strong>K2:</strong> €${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag
+                                <strong>K2:</strong> €${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag<br>
+                                <small class="total-cost">Gesamt: €${((COSTS.systems.k2 / (location.annualProductionDays * 4)) * location.totalDays).toFixed(0)}</small>
                             </div>
                             <div class="system-cost n6-item">
-                                <strong>N6:</strong> €${n6DailyCost.toFixed(0)}/Tag
+                                <strong>N6:</strong> €${n6DailyCost.toFixed(0)}/Tag<br>
+                                <small class="total-cost">Gesamt: €${(n6DailyCost * location.totalDays).toFixed(0)}</small>
                             </div>
                             <div class="system-cost n8-item">
-                                <strong>N8:</strong> €${n8DailyCost.toFixed(0)}/Tag
+                                <strong>N8:</strong> €${n8DailyCost.toFixed(0)}/Tag<br>
+                                <small class="total-cost">Gesamt: €${(n8DailyCost * location.totalDays).toFixed(0)}</small>
                             </div>
                         </div>
                     </td>
@@ -714,9 +717,14 @@
                                             <div class="event-item">
                                                 <div class="event-header">
                                                     <div class="event-name"><strong>${event.name}</strong></div>
-                                                    <button class="edit-event-btn" onclick="openEditEventModal(${globalIndex}, ${location.events.indexOf(event)})" title="Veranstaltung bearbeiten">
-                                                        ✏️ Edit
-                                                    </button>
+                                                    <div class="event-actions">
+                                                        <button class="edit-event-btn" onclick="openEditEventModal(${globalIndex}, ${location.events.indexOf(event)})" title="Veranstaltung bearbeiten">
+                                                            ✏️ Edit
+                                                        </button>
+                                                        <button class="cockpit-btn" onclick="openCockpit('${event.id}')" title="CMH Cockpit öffnen">
+                                                            🖥️ Cockpit
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <div class="event-dates">${formatDateRange(startDate, endDate)}</div>
                                                 <div class="event-days">${eventDays} Tage</div>
@@ -979,6 +987,7 @@
                                 <div class="system-info">
                                     <div class="system-name">K2</div>
                                     <div class="system-cost">€${(COSTS.systems.k2 / (location.annualProductionDays * 4)).toFixed(0)}/Tag</div>
+                                    <div class="system-total-cost">Gesamt: €${((COSTS.systems.k2 / (location.annualProductionDays * 4)) * location.totalDays).toFixed(0)}</div>
                                 </div>
                             </div>
                             <div class="system-item n6-item">
@@ -986,6 +995,7 @@
                                 <div class="system-info">
                                     <div class="system-name">N6</div>
                                     <div class="system-cost">€${n6DailyCost.toFixed(0)}/Tag</div>
+                                    <div class="system-total-cost">Gesamt: €${(n6DailyCost * location.totalDays).toFixed(0)}</div>
                                 </div>
                             </div>
                             <div class="system-item n8-item">
@@ -993,6 +1003,7 @@
                                 <div class="system-info">
                                     <div class="system-name">N8</div>
                                     <div class="system-cost">€${n8DailyCost.toFixed(0)}/Tag</div>
+                                    <div class="system-total-cost">Gesamt: €${(n8DailyCost * location.totalDays).toFixed(0)}</div>
                                 </div>
                             </div>
                         </div>
@@ -1210,6 +1221,17 @@
                 option.textContent = manager;
                 managerSelect.appendChild(option);
             });
+        }
+
+        // CMH Cockpit in neuem Tab öffnen
+        function openCockpit(eventId) {
+            if (!eventId) {
+                alert('Keine Event-ID verfügbar');
+                return;
+            }
+
+            const cockpitUrl = `https://cockpit.clipmyhorse.tv/en/event/${eventId}/show`;
+            window.open(cockpitUrl, '_blank', 'noopener,noreferrer');
         }
 
         // Hilfsfunktion für Datumsformat-Konvertierung
