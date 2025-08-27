@@ -60,26 +60,57 @@
                                 <input type="text" id="editEventName" name="editEventName" required>
                             </div>
                             <div class="form-group">
-                                <label for="editEventStartDate">Startdatum *</label>
-                                <input type="date" id="editEventStartDate" name="editEventStartDate" required>
+                                <label for="editEventLocation">Veranstaltungsort *</label>
+                                <input type="text" id="editEventLocation" name="editEventLocation" required>
                             </div>
                         </div>
 
                         <div class="form-row">
+                            <div class="form-group">
+                                <label for="editEventStartDate">Startdatum *</label>
+                                <input type="date" id="editEventStartDate" name="editEventStartDate" required>
+                            </div>
                             <div class="form-group">
                                 <label for="editEventEndDate">Enddatum *</label>
                                 <input type="date" id="editEventEndDate" name="editEventEndDate" required>
                             </div>
+                        </div>
+
+                        <div class="form-row">
                             <div class="form-group">
-                                <label for="editEventDiscipline">Disziplin</label>
-                                <input type="text" id="editEventDiscipline" name="editEventDiscipline">
+                                <label for="editEventDiscipline">Disziplin *</label>
+                                <select id="editEventDiscipline" name="editEventDiscipline" required>
+                                    <option value="">Bitte wählen...</option>
+                                    <option value="Jumping">Springen</option>
+                                    <option value="Dressage">Dressur</option>
+                                    <option value="Mixed">Mixed</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editEventManager">Event Manager</label>
+                                <select id="editEventManager" name="editEventManager">
+                                    <option value="">Bitte wählen...</option>
+                                    <!-- Wird dynamisch gefüllt -->
+                                </select>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="editEventManager">Event Manager</label>
-                                <input type="text" id="editEventManager" name="editEventManager">
+                                <label for="editEventArenas">Anzahl Arenen</label>
+                                <select id="editEventArenas" name="editEventArenas">
+                                    <option value="">Bitte wählen...</option>
+                                    <option value="1">1 Arena</option>
+                                    <option value="2">2 Arenen</option>
+                                    <option value="3">3 Arenen</option>
+                                    <option value="4">4 Arenen</option>
+                                    <option value="5">5 Arenen</option>
+                                    <option value="6">6 Arenen</option>
+                                    <option value="7">7 Arenen</option>
+                                    <option value="8">8 Arenen</option>
+                                    <option value="9">9 Arenen</option>
+                                    <option value="10">10 Arenen</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="editEventKiSuitable">KI-geeignet</label>
@@ -1155,6 +1186,32 @@
             }
         }
 
+        // Event Manager Dropdown füllen
+        function populateEventManagerDropdown() {
+            const managerSelect = document.getElementById('editEventManager');
+
+            // Bestehende Optionen außer der ersten entfernen
+            while (managerSelect.options.length > 1) {
+                managerSelect.remove(1);
+            }
+
+            // Alle verfügbaren Event Manager sammeln
+            const eventManagers = new Set();
+            eventsData.forEach(event => {
+                if (event.event_manager) {
+                    eventManagers.add(event.event_manager);
+                }
+            });
+
+            // Alphabetisch sortieren und zum Dropdown hinzufügen
+            Array.from(eventManagers).sort().forEach(manager => {
+                const option = document.createElement('option');
+                option.value = manager;
+                option.textContent = manager;
+                managerSelect.appendChild(option);
+            });
+        }
+
         // Hilfsfunktion für Datumsformat-Konvertierung
         function convertToHtmlDateFormat(dateString) {
             if (!dateString) return '';
@@ -1209,12 +1266,17 @@
             const location = filteredResults[locationIndex];
             const event = location.events[eventIndex];
 
+            // Event Manager Dropdown füllen
+            populateEventManagerDropdown();
+
             // Formular mit aktuellen Daten füllen
             document.getElementById('editEventName').value = event.name || '';
+            document.getElementById('editEventLocation').value = event.location || '';
             document.getElementById('editEventStartDate').value = convertToHtmlDateFormat(event.start_date) || '';
             document.getElementById('editEventEndDate').value = convertToHtmlDateFormat(event.end_date) || '';
             document.getElementById('editEventDiscipline').value = event.discipline || '';
             document.getElementById('editEventManager').value = event.event_manager || '';
+            document.getElementById('editEventArenas').value = event.arenas || '';
             document.getElementById('editEventKiSuitable').checked = event.kiSuitable || false;
             document.getElementById('editEventNotes').value = event.notes || '';
 
@@ -1244,11 +1306,14 @@
 
             // Neue Daten aus dem Formular sammeln und Datumsformate konvertieren
             const updatedEvent = {
+                id: event.id, // ID beibehalten
                 name: document.getElementById('editEventName').value,
+                location: document.getElementById('editEventLocation').value,
                 start_date: convertFromHtmlDateFormat(document.getElementById('editEventStartDate').value),
                 end_date: convertFromHtmlDateFormat(document.getElementById('editEventEndDate').value),
                 discipline: document.getElementById('editEventDiscipline').value,
                 event_manager: document.getElementById('editEventManager').value,
+                arenas: document.getElementById('editEventArenas').value,
                 kiSuitable: document.getElementById('editEventKiSuitable').checked,
                 notes: document.getElementById('editEventNotes').value
             };
@@ -1335,12 +1400,13 @@
                         eventsToSave.push({
                             id: event.id,
                             name: event.name,
-                            location: location.location,
+                            location: event.location || location.location,
                             country: location.country,
                             start_date: event.start_date,
                             end_date: event.end_date,
                             discipline: event.discipline,
                             event_manager: event.event_manager,
+                            arenas: event.arenas,
                             kiSuitable: event.kiSuitable || false,
                             notes: event.notes || ''
                         });
