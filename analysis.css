@@ -375,48 +375,72 @@ body {
     font-weight: 700;
 }
 
-/* Table Styles */
+/* Table Styles - Harmonisches Design */
 .analysis-table-container {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 1.5rem;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    border: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     margin-bottom: 2rem;
     overflow-x: auto;
     width: 100%;
     flex: 1;
+    position: relative;
+}
+
+.analysis-table-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #B30918 0%, #8B0718 50%, #B30918 100%);
+    border-radius: 16px 16px 0 0;
 }
 
 .analysis-table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0;
+    border-spacing: 0 0.75rem;
     font-size: 0.9rem;
-    background: #ffffff;
-    border-radius: 8px;
+    background: transparent;
+    border-radius: 12px;
     overflow: hidden;
 }
 
 .analysis-table th {
-    background: #f8f9fa;
-    color: #070E16;
+    background: linear-gradient(135deg, #B30918 0%, #8B0718 100%);
+    color: #ffffff;
     font-weight: 700;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 1.25rem 1rem;
     text-align: left;
-    border: 1px solid #e0e0e0;
-    border-bottom: 2px solid #e0e0e0;
+    border: none;
+    box-shadow: 0 2px 4px rgba(179, 9, 24, 0.2);
+    position: relative;
 }
 
 .analysis-table th:first-child {
-    border-left: 1px solid #e0e0e0;
+    border-radius: 12px 0 0 0;
 }
 
 .analysis-table th:last-child {
-    border-right: 1px solid #e0e0e0;
+    border-radius: 0 12px 0 0;
+}
+
+.analysis-table th:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 60%;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3), transparent);
 }
 
 .analysis-table td {
@@ -448,82 +472,123 @@ body {
     min-width: 300px;
 }
 
+/* Harmonisches Tabellen-Design */
 .location-row {
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .location-row:hover {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
 }
 
 .location-row td {
     border: none;
-    border-left: 1px solid #e0e0e0;
-    border-right: 1px solid #e0e0e0;
+    padding: 1.25rem 1rem;
+    vertical-align: top;
 }
 
-.location-row:first-child td {
-    border-top: 1px solid #e0e0e0;
+/* Entferne vertikale Trennlinien */
+.location-row td:not(:last-child) {
+    position: relative;
 }
 
+.location-row td:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 60%;
+    background: linear-gradient(to bottom, transparent, #e0e0e0, transparent);
+    opacity: 0.3;
+}
+
+/* Erste Spalte hervorheben */
 .location-row td:first-child {
-    border-left: 1px solid #e0e0e0;
+    font-weight: 600;
+    color: #070E16;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 12px 0 0 12px;
 }
 
-.location-row td:last-child {
-    border-right: 1px solid #e0e0e0;
+/* Kameramann-Spalte ohne vertikale Linie */
+.operator-cost {
+    position: relative;
 }
 
-/* Events Cell */
+.operator-cost::before {
+    display: none;
+}
+
+/* Systems-Spalte */
+.systems-cost {
+    border-radius: 0 12px 12px 0;
+}
+
+/* Events Cell - Harmonisches Design */
 .events-cell {
     min-height: 80px;
     display: flex;
     flex-direction: column;
 }
 
-/* Full-width Events Row */
+/* Full-width Events Row - Verbesserte optische Zuordnung */
 .events-row {
-    background: #ffffff;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 0 0 12px 12px;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .events-row td {
     border: none;
-    border-left: 1px solid #e0e0e0;
-    border-right: 1px solid #e0e0e0;
-    border-bottom: 1px solid #e0e0e0;
-    background: #ffffff;
+    background: transparent;
+    padding: 0;
 }
 
 .events-cell-fullwidth {
-    padding: 1rem;
-    background: #ffffff;
-    border-radius: 6px;
+    padding: 1.25rem;
+    background: transparent;
+    border-radius: 0 0 12px 12px;
+    border-top: 1px solid rgba(224, 224, 224, 0.5);
 }
 
 .event-summary {
     cursor: pointer;
-    padding: 1rem;
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid rgba(224, 224, 224, 0.6);
+    border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: all 0.3s ease;
     font-weight: 600;
     color: #070E16;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .event-summary:hover {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     border-color: #B30918;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(179, 9, 24, 0.15);
+    box-shadow: 0 4px 12px rgba(179, 9, 24, 0.15);
 }
 
 .event-count {
     font-weight: 600;
     color: #070E16;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .toggle-icon {
@@ -531,14 +596,22 @@ body {
     color: #B30918;
     transition: all 0.3s ease;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(179, 9, 24, 0.1);
 }
 
 .event-details {
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 1rem;
-    margin-top: 0.5rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid rgba(224, 224, 224, 0.5);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-top: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* Events Grid Layout */
@@ -581,13 +654,22 @@ body {
     align-self: flex-end;
 }
 
-/* Cost Display */
+/* Cost Display - Harmonisches Design */
 .operator-cost, .systems-cost {
     min-height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.operator-cost:hover, .systems-cost:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
 }
 
 .cost-display {
@@ -595,9 +677,9 @@ body {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
     width: 100%;
 }
 
@@ -673,30 +755,45 @@ body {
     color: #070E16;
 }
 
-/* System Costs Container - Horizontal Layout */
+/* System Costs Container - Harmonisches Design */
 .system-costs {
     display: flex;
     gap: 1rem;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem;
-    background: #f8f9fa;
-    border-radius: 6px;
-    min-height: 60px;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 10px;
+    min-height: 80px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(224, 224, 224, 0.5);
 }
 
 .system-cost {
     font-size: 0.85rem;
     font-weight: 600;
     color: #070E16;
-    padding: 0.5rem 0.75rem;
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid rgba(224, 224, 224, 0.6);
+    border-radius: 8px;
     text-align: center;
     flex: 1;
     min-width: 0;
     transition: all 0.3s ease;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.system-cost::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #B30918, transparent);
 }
 
 .system-cost strong {
@@ -705,6 +802,24 @@ body {
     font-weight: 700;
     color: #B30918;
     margin-bottom: 0.25rem;
+}
+
+.system-cost:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(179, 9, 24, 0.15);
+    border-color: #B30918;
+}
+
+.system-cost.disabled {
+    opacity: 0.6;
+    background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
+    border-color: #dee2e6;
+    color: #6c757d;
+    box-shadow: none;
+}
+
+.system-cost.disabled::before {
+    background: linear-gradient(90deg, transparent, #6c757d, transparent);
 }
 
 /* Total Cost Styles */
@@ -735,11 +850,12 @@ body {
     color: #6c757d;
 }
 
-/* System Colors */
+/* System Colors - Harmonisches Design */
 .k2-item {
-    opacity: 0.6;
-    background: #f8f9fa;
-    border-color: #dee2e6;
+    opacity: 0.7;
+    background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
+    border-color: rgba(222, 226, 230, 0.8);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .k2-item .system-name {
@@ -748,31 +864,48 @@ body {
 
 .k2-item .system-cost {
     color: #6c757d;
-    border-color: #dee2e6;
+    border-color: rgba(222, 226, 230, 0.8);
+    background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
 }
 
 .k2-item .system-cost strong {
     color: #6c757d;
 }
 
+.k2-item .system-cost::before {
+    background: linear-gradient(90deg, transparent, #6c757d, transparent);
+}
+
 .n6-item {
-    background: #fff3e0;
-    border-color: #ff9800;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-color: rgba(255, 152, 0, 0.8);
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
 }
 
 .n6-item .system-cost {
     color: #e65100;
-    border-color: #ff9800;
+    border-color: rgba(255, 152, 0, 0.8);
+    background: linear-gradient(135deg, #ffffff 0%, #fff3e0 100%);
+}
+
+.n6-item .system-cost::before {
+    background: linear-gradient(90deg, transparent, #ff9800, transparent);
 }
 
 .n8-item {
-    background: #f3e5f5;
-    border-color: #9c27b0;
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    border-color: rgba(156, 39, 176, 0.8);
+    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.1);
 }
 
 .n8-item .system-cost {
     color: #7b1fa2;
-    border-color: #9c27b0;
+    border-color: rgba(156, 39, 176, 0.8);
+    background: linear-gradient(135deg, #ffffff 0%, #f3e5f5 100%);
+}
+
+.n8-item .system-cost::before {
+    background: linear-gradient(90deg, transparent, #9c27b0, transparent);
 }
 
 /* Cost Overview - Removed as requested */
